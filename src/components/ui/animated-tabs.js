@@ -4,19 +4,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "../../lib/utils";
 
-interface Tab {
-  id: string;
-  label: string;
-  content: React.ReactNode;
-}
-
-interface AnimatedTabsProps {
-  tabs?: Tab[];
-  defaultTab?: string;
-  className?: string;
-}
-
-const defaultTabs: Tab[] = [
+const defaultTabs = [
   {
     id: "tab1",
     label: "Forza",
@@ -100,8 +88,8 @@ const AnimatedTabs = ({
   tabs = defaultTabs,
   defaultTab,
   className,
-}: AnimatedTabsProps) => {
-  const [activeTab, setActiveTab] = useState<string>(defaultTab || tabs[0]?.id);
+}) => {
+  const [activeTab, setActiveTab] = useState(defaultTab || tabs[0]?.id);
 
   if (!tabs?.length) return null;
 

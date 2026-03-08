@@ -73,18 +73,18 @@ export default function ProgressTable() {
       return sum + (weight * sets);
     }, 0);
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id) => {
     setWorkouts((prev) => prev.filter((workout) => workout.id !== id));
   };
 
-  const getStatusIcon = (completed: boolean) => {
+  const getStatusIcon = (completed) => {
     if (completed) {
       return <FiCheckCircle className="text-green-400" size={18} />;
     }
     return <FiClock className="text-yellow-400" size={18} />;
   };
 
-  const getDayColor = (day: string) => {
+  const getDayColor = (day) => {
     if (day.includes('Giorno 1')) return 'text-green-400';
     if (day.includes('Giorno 2')) return 'text-blue-400';
     if (day.includes('Giorno 3')) return 'text-yellow-400';
