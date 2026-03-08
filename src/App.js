@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { exercisesData } from './data/exercises';
 import ExerciseList from './components/ExerciseList';
-import HeroFuturistic from './components/ui/hero-futuristic';
+import HeroFuturistic from './components/ui/hero-futuristic.js';
 import { AnimatedTabs } from './components/ui/animated-tabs';
 import ProgressTable from './components/ProgressTable';
 
