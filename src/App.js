@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { exercisesData } from './data/exercises';
 import ExerciseList from './components/ExerciseList';
+import HeroFuturistic from './components/ui/hero-futuristic';
 
 const App = () => {
   const [currentDay, setCurrentDay] = useState(1);
@@ -34,21 +35,13 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-black">
-      {/* Header */}
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-gray-900 to-black opacity-90"></div>
-        <div className="relative z-10 max-w-md mx-auto px-6 py-8 text-center">
-          <div className="mb-2">
-            <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Tactical Strength</span>
-          </div>
-          <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">TACTICAL</h1>
-          <p className="text-sm text-gray-400 font-light">La tua scheda di allenamento digitale</p>
-        </div>
-      </div>
+      {/* Hero Section */}
+      <HeroFuturistic />
 
-      {/* Day Selector */}
-      <div className="max-w-md mx-auto px-6 mb-8">
-        <div className="flex gap-3 overflow-x-auto pb-2">
+      {/* Main Content */}
+      <div id="main-content" className="max-w-md mx-auto px-6 py-12">
+        {/* Day Selector */}
+        <div className="flex gap-3 overflow-x-auto pb-2 mb-8">
           {Object.entries(exercisesData).map(([dayNum, dayData]) => (
             <button
               key={dayNum}
@@ -64,10 +57,7 @@ const App = () => {
             </button>
           ))}
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="max-w-md mx-auto px-6">
         <div className={`glass rounded-3xl p-6 mb-6 shadow-premium-sm`}>
           <div className={`inline-block px-3 py-1 rounded-full ${getDayGradient(day.color)} text-white text-xs font-medium mb-4`}>
             {day.title.split(':')[1]}
