@@ -1,346 +1,175 @@
-// @ts-nocheck
-'use client';
-
-import { Canvas, extend, useFrame, useThree } from '@react-three/fiber';
-import { useAspect, useTexture } from '@react-three/drei';
-import { useMemo, useRef, useState, useEffect } from 'react';
-import * as THREE from 'three';
-
-// Texture maps per l'effetto glitch
-const TEXTUREMAP = { src: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=400&fit=crop' };
-const DEPTHMAP = { src: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=400&fit=crop&grayscale' };
-
-extend({ MeshBasicNodeMaterial: THREE.MeshBasicMaterial } as any);
-
-// Extend JSX namespace for Three.js elements
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      mesh: any;
-      planeGeometry: any;
-    }
-  }
-}
-
-// Post Processing component semplificato
-const PostProcessing = ({
-  strength = 1,
-}: {
-  strength?: number;
-}) => {
-  const { gl, scene, camera } = useThree();
-  
-  useFrame(() => {
-    // Effetto glow semplice
-    gl.toneMapping = THREE.ACESFilmicToneMapping;
-    gl.toneMappingExposure = strength;
-  });
-
-  return null;
-};
-
-const WIDTH = 300;
-const HEIGHT = 300;
-
-const Scene = () => {
-  const [rawMap, depthMap] = useTexture([TEXTUREMAP.src, DEPTHMAP.src]);
-  const meshRef = useRef<THREE.Mesh>(null);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    if (rawMap && depthMap) {
-      setVisible(true);
-    }
-  }, [rawMap, depthMap]);
-
-  const { material, uniforms } = useMemo(() => {
-    const uPointer = useRef(new THREE.Vector2(0, 0));
-    const uProgress = useRef(0);
-
-    const strength = 0.01;
-
-    // Shader material per l'effetto glitch
-    const material = new THREE.ShaderMaterial({
-      uniforms: {
-        tMap: { value: rawMap },
-        tDepthMap: { value: depthMap },
-        uPointer: { value: uPointer.current },
-        uProgress: { value: uProgress.current },
-        uTime: { value: 0 },
-        uOpacity: { value: 0 }
-      },
-      vertexShader: `
-        varying vec2 vUv;
-        void main() {
-          vUv = uv;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-      `,
-      fragmentShader: `
-        uniform sampler2D tMap;
-        uniform sampler2D tDepthMap;
-        uniform vec2 uPointer;
-        uniform float uProgress;
-        uniform float uTime;
-        uniform float uOpacity;
-        varying vec2 vUv;
-
-        float random(vec2 st) {
-          return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
-        }
-
-        float noise(vec2 st) {
-          vec2 i = floor(st);
-          vec2 f = fract(st);
-          
-          float a = random(i);
-          float b = random(i + vec2(1.0, 0.0));
-          float c = random(i + vec2(0.0, 1.0));
-          float d = random(i + vec2(1.0, 1.0));
-          
-          vec2 u = f * f * (3.0 - 2.0 * f);
-          
-          return mix(a, b, u.x) + (c - a)* u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
-        }
-
-        void main() {
-          vec2 uv = vUv;
-          
-          // Aspect ratio correction
-          float aspect = ${WIDTH}.0 / ${HEIGHT}.0;
-          uv.x *= aspect;
-          
-          // Glitch effect
-          float depth = texture2D(tDepthMap, vUv).r;
-          float flow = 1.0 - smoothstep(0.0, 0.02, abs(depth - uProgress));
-          
-          // Pointer interaction
-          vec2 pointerEffect = uPointer * strength * depth;
-          uv += pointerEffect;
-          
-          // Tiling pattern
-          vec2 tiledUv = mod(uv * 120.0, 2.0) - 1.0;
-          float dist = length(tiledUv);
-          float dotPattern = smoothstep(0.5, 0.49, dist) * noise(uv * 60.0);
-          
-          // Red glitch mask
-          vec3 mask = vec3(dotPattern * flow * 10.0, 0.0, 0.0);
-          
-          // Final color with screen blend
-          vec4 texColor = texture2D(tMap, vUv);
-          vec3 finalColor = mix(texColor.rgb, texColor.rgb + mask, flow);
-          
-          gl_FragColor = vec4(finalColor, uOpacity);
-        }
-      `,
-      transparent: true,
-    });
-
-    return {
-      material,
-      uniforms: {
-        uPointer: material.uniforms.uPointer,
-        uProgress: material.uniforms.uProgress,
-        uOpacity: material.uniforms.uOpacity,
-        uTime: material.uniforms.uTime,
-      },
-    };
-  }, [rawMap, depthMap]);
-
-  const [w, h] = useAspect(WIDTH, HEIGHT);
-
-  useFrame(({ clock, pointer }) => {
-    uniforms.uPointer.value = pointer;
-    uniforms.uProgress.value = (Math.sin(clock.getElapsedTime() * 0.5) * 0.5 + 0.5);
-    uniforms.uTime.value = clock.getElapsedTime();
-    
-    // Fade in effect
-    if (meshRef.current && material) {
-      const currentOpacity = (material as THREE.ShaderMaterial).uniforms.uOpacity.value;
-      const targetOpacity = visible ? 1 : 0;
-      (material as THREE.ShaderMaterial).uniforms.uOpacity.value = THREE.MathUtils.lerp(
-        currentOpacity,
-        targetOpacity,
-        0.07
-      );
-    }
-  });
-
-  const scaleFactor = 0.40;
-  return (
-    <mesh ref={meshRef} scale={[w * scaleFactor, h * scaleFactor, 1]} material={material}>
-      <planeGeometry />
-    </mesh>
-  );
-};
+import { useState, useEffect } from 'react';
 
 export const HeroFuturistic = () => {
-  const titleWords = 'TACTICAL STRENGTH'.split(' ');
-  const subtitle = 'La tua scheda di allenamento digitale di nuova generazione.';
   const [visibleWords, setVisibleWords] = useState(0);
   const [subtitleVisible, setSubtitleVisible] = useState(false);
-  const [delays, setDelays] = useState<number[]>([]);
-  const [subtitleDelay, setSubtitleDelay] = useState(0);
-
-  useEffect(() => {
-    setDelays(titleWords.map(() => Math.random() * 0.07));
-    setSubtitleDelay(Math.random() * 0.1);
-  }, [titleWords.length]);
+  const [btnVisible, setBtnVisible] = useState(false);
+  const titleWords = ['TACTICAL', 'STRENGTH'];
 
   useEffect(() => {
     if (visibleWords < titleWords.length) {
-      const timeout = setTimeout(() => setVisibleWords(visibleWords + 1), 600);
+      const timeout = setTimeout(() => setVisibleWords(v => v + 1), 500);
       return () => clearTimeout(timeout);
     } else {
-      const timeout = setTimeout(() => setSubtitleVisible(true), 800);
-      return () => clearTimeout(timeout);
+      const t1 = setTimeout(() => setSubtitleVisible(true), 600);
+      const t2 = setTimeout(() => setBtnVisible(true), 1200);
+      return () => { clearTimeout(t1); clearTimeout(t2); };
     }
   }, [visibleWords, titleWords.length]);
 
   return (
-    <div className="h-screen relative overflow-hidden bg-black">
-      {/* CSS Animations */}
+    <div className="h-screen relative overflow-hidden bg-black flex items-center justify-center">
       <style>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(30px) scale(0.96); filter: blur(8px); }
+          to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
         }
-        
-        @keyframes fadeInSubtitle {
-          from {
-            opacity: 0;
-            transform: translateY(15px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-12px); }
         }
-        
-        @keyframes exploreBtn {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+        @keyframes pulse-ring {
+          0% { transform: scale(0.8); opacity: 0.6; }
+          50% { transform: scale(1.2); opacity: 0; }
+          100% { transform: scale(0.8); opacity: 0; }
         }
-        
-        .fade-in {
-          animation: fadeIn 0.8s ease-out forwards;
+        @keyframes shimmer {
+          0% { background-position: -200% center; }
+          100% { background-position: 200% center; }
         }
-        
-        .fade-in-subtitle {
-          animation: fadeInSubtitle 0.8s ease-out forwards;
+        @keyframes orb-move-1 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          25% { transform: translate(60px, -40px) scale(1.1); }
+          50% { transform: translate(-30px, -80px) scale(0.9); }
+          75% { transform: translate(-60px, 20px) scale(1.05); }
         }
-        
-        .explore-btn {
-          animation: exploreBtn 0.8s ease-out forwards;
-          position: absolute;
-          bottom: 40px;
-          left: 50%;
-          transform: translateX(-50%);
-          background: rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          color: white;
-          padding: 12px 24px;
-          border-radius: 50px;
-          font-weight: 500;
-          font-size: 14px;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          z-index: 100;
+        @keyframes orb-move-2 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          25% { transform: translate(-50px, 50px) scale(0.95); }
+          50% { transform: translate(40px, 70px) scale(1.15); }
+          75% { transform: translate(70px, -30px) scale(1); }
         }
-        
-        .explore-btn:hover {
-          background: rgba(255, 255, 255, 0.2);
-          transform: translateX(-50%) translateY(-2px);
+        @keyframes orb-move-3 {
+          0%, 100% { transform: translate(0, 0) scale(1.05); }
+          33% { transform: translate(-80px, -50px) scale(0.9); }
+          66% { transform: translate(50px, 40px) scale(1.1); }
         }
-        
-        .explore-arrow {
-          transition: transform 0.3s ease;
+        .hero-word {
+          animation: fadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
-        
-        .explore-btn:hover .explore-arrow {
-          transform: translateY(2px);
+        .hero-subtitle {
+          animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .hero-btn {
+          animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .shimmer-text {
+          background: linear-gradient(90deg, #fff 0%, #a1a1aa 40%, #fff 60%, #a1a1aa 100%);
+          background-size: 200% auto;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          animation: shimmer 4s linear infinite;
         }
       `}</style>
 
-      {/* Text Content */}
-      <div className="absolute inset-0 z-20 pointer-events-none px-6 md:px-10 flex items-center justify-center">
-        <div className="text-center max-w-4xl">
-          <div className="text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-black mb-4">
-            <div className="flex flex-col md:flex-row justify-center items-center gap-2 md:gap-6 text-white">
-              {titleWords.map((word, index) => (
-                <div
-                  key={index}
-                  className={index < visibleWords ? 'fade-in' : ''}
-                  style={{ 
-                    animationDelay: `${index * 0.13 + (delays[index] || 0)}s`, 
-                    opacity: index < visibleWords ? 1 : 0 
-                  }}
-                >
-                  {word}
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="text-lg md:text-xl lg:text-2xl xl:text-3xl font-medium text-gray-300 max-w-2xl mx-auto">
-            <div
-              className={subtitleVisible ? 'fade-in-subtitle' : ''}
-              style={{ 
-                animationDelay: `${titleWords.length * 0.13 + 0.2 + subtitleDelay}s`, 
-                opacity: subtitleVisible ? 1 : 0 
-              }}
-            >
-              {subtitle}
-            </div>
-          </div>
-        </div>
+      {/* Animated gradient orbs */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-1/4 left-1/4 w-72 h-72 rounded-full opacity-20"
+          style={{ background: 'radial-gradient(circle, #00ff88 0%, transparent 70%)', animation: 'orb-move-1 15s ease-in-out infinite' }} />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full opacity-15"
+          style={{ background: 'radial-gradient(circle, #007aff 0%, transparent 70%)', animation: 'orb-move-2 18s ease-in-out infinite' }} />
+        <div className="absolute top-1/2 left-1/2 w-64 h-64 rounded-full opacity-10"
+          style={{ background: 'radial-gradient(circle, #ff9500 0%, transparent 70%)', animation: 'orb-move-3 12s ease-in-out infinite', transform: 'translate(-50%, -50%)' }} />
       </div>
 
-      {/* Scroll Button */}
-      <button
-        className="explore-btn"
-        style={{ animationDelay: '2.2s' }}
-        onClick={() => {
-          document.getElementById('main-content')?.scrollIntoView({ behavior: 'smooth' });
-        }}
-      >
-        Inizia l'allenamento
-        <span className="explore-arrow">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" className="arrow-svg">
-            <path d="M11 5V17" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-            <path d="M6 12L11 17L16 12" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-          </svg>
-        </span>
-      </button>
+      {/* Grain overlay */}
+      <div className="absolute inset-0 opacity-5"
+        style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\' opacity=\'1\'/%3E%3C/svg%3E")' }} />
 
-      {/* Three.js Canvas */}
-      <Canvas
-        flat
-        camera={{ position: [0, 0, 5], fov: 50 }}
-        gl={{ 
-          antialias: true,
-          alpha: true,
-          powerPreference: 'high-performance'
-        }}
-      >
-        <PostProcessing />
-        <Scene />
-      </Canvas>
+      {/* Content */}
+      <div className="relative z-10 text-center px-6 max-w-xl mx-auto">
+        {/* Icon ring */}
+        <div className="mx-auto mb-8 relative w-20 h-20 flex items-center justify-center" style={{ animation: 'float 4s ease-in-out infinite' }}>
+          <div className="absolute inset-0 rounded-full border border-white/20" />
+          <div className="absolute inset-0 rounded-full border border-white/10" style={{ animation: 'pulse-ring 3s ease-out infinite' }} />
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M6.5 6.5h11v11h-11z" />
+            <path d="M6.5 6.5L12 2l5.5 4.5" />
+            <path d="M6.5 17.5L12 22l5.5-4.5" />
+            <path d="M12 2v20" />
+            <path d="M2 12h20" />
+          </svg>
+        </div>
+
+        {/* Title */}
+        <div className="mb-4">
+          {titleWords.map((word, i) => (
+            <div
+              key={i}
+              className={i < visibleWords ? 'hero-word' : ''}
+              style={{
+                opacity: i < visibleWords ? undefined : 0,
+                animationDelay: `${i * 0.15}s`,
+                fontSize: 'clamp(2.5rem, 10vw, 5rem)',
+                fontWeight: 900,
+                lineHeight: 1.05,
+                letterSpacing: '-0.03em',
+              }}
+            >
+              <span className="shimmer-text">{word}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Subtitle */}
+        <p
+          className={subtitleVisible ? 'hero-subtitle' : ''}
+          style={{
+            opacity: subtitleVisible ? undefined : 0,
+            animationDelay: '0.1s',
+            color: 'rgba(255,255,255,0.5)',
+            fontSize: 'clamp(0.875rem, 2.5vw, 1.125rem)',
+            fontWeight: 400,
+            lineHeight: 1.6,
+            maxWidth: '28ch',
+            margin: '0 auto 2.5rem',
+          }}
+        >
+          La tua scheda di allenamento digitale.
+        </p>
+
+        {/* CTA Button */}
+        <button
+          className={btnVisible ? 'hero-btn' : ''}
+          onClick={() => document.getElementById('main-content')?.scrollIntoView({ behavior: 'smooth' })}
+          style={{
+            opacity: btnVisible ? undefined : 0,
+            animationDelay: '0.1s',
+            background: 'rgba(255,255,255,0.08)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255,255,255,0.15)',
+            color: '#fff',
+            padding: '14px 32px',
+            borderRadius: '50px',
+            fontWeight: 500,
+            fontSize: '0.9rem',
+            cursor: 'pointer',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '10px',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.15)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+        >
+          Inizia l'allenamento
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 5v14" /><path d="m19 12-7 7-7-7" />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 };
