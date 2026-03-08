@@ -15,16 +15,8 @@ extend({ MeshBasicNodeMaterial: THREE.MeshBasicMaterial } as any);
 declare global {
   namespace JSX {
     interface IntrinsicElements {
-      mesh: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
-        ref?: React.Ref<THREE.Mesh>;
-        scale?: [number, number, number];
-        material?: THREE.Material;
-        position?: [number, number, number];
-        rotation?: [number, number, number];
-      };
-      planeGeometry: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
-        args?: [number, number];
-      };
+      mesh: any;
+      planeGeometry: any;
     }
   }
 }
