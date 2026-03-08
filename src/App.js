@@ -3,6 +3,7 @@ import { exercisesData } from './data/exercises';
 import ExerciseList from './components/ExerciseList';
 import HeroFuturistic from './components/ui/hero-futuristic';
 import { AnimatedTabs } from './components/ui/animated-tabs';
+import ProgressTable from './components/ProgressTable';
 
 const App = () => {
   const [currentDay, setCurrentDay] = useState(1);
@@ -97,6 +98,11 @@ const App = () => {
               />
             </div>
           </div>
+        </div>
+
+        {/* Progress Table Section */}
+        <div className="mb-12">
+          <ProgressTable />
         </div>
 
         {Object.keys(completedExercises).length > 0 && (
