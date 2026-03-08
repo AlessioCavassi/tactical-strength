@@ -4,46 +4,53 @@ import ExerciseModal from './ExerciseModal';
 const ExerciseList = ({ day, exercises, onExerciseComplete }) => {
   const [selectedExercise, setSelectedExercise] = React.useState(null);
 
-  const getColorClasses = (color) => {
+  const getDayGradient = (color) => {
     switch (color) {
       case 'green':
-        return 'bg-green-500 hover:bg-green-600';
+        return 'gradient-green';
       case 'blue':
-        return 'bg-blue-500 hover:bg-blue-600';
+        return 'gradient-blue';
       case 'yellow':
-        return 'bg-yellow-500 hover:bg-yellow-600';
+        return 'gradient-yellow';
       case 'red':
-        return 'bg-red-500 hover:bg-red-600';
+        return 'gradient-red';
       case 'orange':
-        return 'bg-orange-500 hover:bg-orange-600';
+        return 'gradient-orange';
       default:
-        return 'bg-gray-500 hover:bg-gray-600';
+        return 'gradient-blue';
     }
   };
 
   return (
     <div className="space-y-3">
-      {exercises.map((exercise) => (
+      {exercises.map((exercise, index) => (
         <div
           key={exercise.id}
-          className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
+          className="glass rounded-2xl overflow-hidden transition-all-smooth hover:bg-white/10"
         >
           <button
             onClick={() => setSelectedExercise(exercise)}
-            className="w-full text-left p-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset"
+            className="w-full text-left p-4 focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-inset"
           >
-            <div className="flex justify-between items-start">
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-800 mb-1">{exercise.name}</h3>
-                <div className="flex flex-wrap gap-2 text-sm">
-                  <span className="text-blue-600 font-medium">{exercise.setsReps}</span>
-                  {exercise.recovery > 0 && (
-                    <span className="text-gray-600">Recupero: {exercise.recovery} sec</span>
-                  )}
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-3 flex-1">
+                <div className={`w-10 h-10 rounded-xl ${getDayGradient(day.color)} flex items-center justify-center text-white font-bold text-sm shadow-premium-sm`}>
+                  {index + 1}
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-white font-semibold mb-1">{exercise.name}</h3>
+                  <div className="flex flex-wrap gap-3 text-xs">
+                    <span className="text-blue-400 font-medium">{exercise.setsReps}</span>
+                    {exercise.recovery > 0 && (
+                      <span className="text-gray-500">⏱ {exercise.recovery}s</span>
+                    )}
+                  </div>
                 </div>
               </div>
-              <div className={`w-8 h-8 rounded-full ${getColorClasses(day.color)} flex items-center justify-center text-white text-sm font-bold`}>
-                →
+              <div className="text-gray-400 transition-all-smooth group-hover:text-white">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
               </div>
             </div>
           </button>
