@@ -15,8 +15,16 @@ extend({ MeshBasicNodeMaterial: THREE.MeshBasicMaterial } as any);
 declare global {
   namespace JSX {
     interface IntrinsicElements {
-      mesh: any;
-      planeGeometry: any;
+      mesh: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
+        ref?: React.Ref<THREE.Mesh>;
+        scale?: [number, number, number];
+        material?: THREE.Material;
+        position?: [number, number, number];
+        rotation?: [number, number, number];
+      };
+      planeGeometry: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
+        args?: [number, number];
+      };
     }
   }
 }
@@ -24,10 +32,8 @@ declare global {
 // Post Processing component semplificato
 const PostProcessing = ({
   strength = 1,
-  threshold = 1,
 }: {
   strength?: number;
-  threshold?: number;
 }) => {
   const { gl, scene, camera } = useThree();
   
@@ -339,7 +345,7 @@ export const HeroFuturistic = () => {
           powerPreference: 'high-performance'
         }}
       >
-        <PostProcessing fullScreenEffect={true} />
+        <PostProcessing />
         <Scene />
       </Canvas>
     </div>
