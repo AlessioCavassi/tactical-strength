@@ -9,6 +9,8 @@ import OnboardingScreen from './components/OnboardingScreen';
 import { useAuth } from './hooks/useAuth';
 import { useWorkouts } from './hooks/useWorkouts';
 import { useUserProfile } from './hooks/useUserProfile';
+import { useExerciseNotes } from './hooks/useExerciseNotes';
+import { useExerciseHistory } from './hooks/useExerciseHistory';
 
 const App = () => {
   const { user, loading, logout } = useAuth();
@@ -16,6 +18,8 @@ const App = () => {
   const [currentDay, setCurrentDay] = useState(1);
   const [completedExercises, setCompletedExercises] = useState({});
   const { workouts, saveWorkout, deleteWorkout } = useWorkouts(user?.uid);
+  const { getNote, saveNote } = useExerciseNotes(user?.uid);
+  const { getLastWorkout, getPR, calc1RM, checkAndSavePR } = useExerciseHistory(user?.uid);
 
   const userLevel = profile?.level || 'beginner';
   const currentDayData = exercisesData[currentDay];
@@ -163,6 +167,12 @@ const App = () => {
             exercises={day.exercises}
             onExerciseComplete={handleExerciseComplete}
             userLevel={userLevel}
+            getLastWorkout={getLastWorkout}
+            getNote={getNote}
+            saveNote={saveNote}
+            getPR={getPR}
+            calc1RM={calc1RM}
+            checkAndSavePR={checkAndSavePR}
           />
         </div>
 
