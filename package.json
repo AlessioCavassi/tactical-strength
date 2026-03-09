@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "ajv": "^8.18.0",
     "clsx": "^2.1.1",
     "firebase": "^12.10.0",

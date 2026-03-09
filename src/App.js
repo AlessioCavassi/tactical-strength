@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { FaRobot } from 'react-icons/fa';
 import { exercisesData } from './data/exercises';
 import ExerciseList from './components/ExerciseList';
 import HeroFuturistic from './components/ui/hero-futuristic.js';
@@ -13,6 +14,8 @@ import { useExerciseNotes } from './hooks/useExerciseNotes';
 import { useExerciseHistory } from './hooks/useExerciseHistory';
 import { useGamification } from './hooks/useGamification';
 import GamificationBar from './components/GamificationBar';
+import useAIWorkoutAssignment from './hooks/useAIWorkoutAssignment';
+import AIWorkoutPersonalization from './components/AIWorkoutPersonalization';
 
 const App = () => {
   const { user, loading, logout } = useAuth();
@@ -23,6 +26,8 @@ const App = () => {
   const { getNote, saveNote } = useExerciseNotes(user?.uid);
   const { getLastWorkout, getPR, calc1RM, checkAndSavePR } = useExerciseHistory(user?.uid);
   const gamification = useGamification(user?.uid);
+  const aiWorkout = useAIWorkoutAssignment();
+  const [showAIPersonalization, setShowAIPersonalization] = useState(false);
 
   const userLevel = profile?.level || 'beginner';
   const currentDayData = exercisesData[currentDay];
@@ -134,6 +139,17 @@ const App = () => {
         {/* Animated Tabs Section */}
         <div className="mb-8">
           <AnimatedTabs />
+          
+          {/* AI Workout Button */}
+          <div className="mt-4">
+            <button
+              onClick={() => setShowAIPersonalization(true)}
+              className="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all flex items-center justify-center space-x-2 shadow-premium-sm"
+            >
+              <FaRobot className="text-lg" />
+              <span>Generate AI Workout</span>
+            </button>
+          </div>
         </div>
 
         {/* Divider */}
@@ -201,6 +217,25 @@ const App = () => {
 
       {/* Bottom safe area */}
       <div className="h-20"></div>
+      
+      {/* AI Workout Personalization Modal */}
+      {showAIPersonalization && (
+        <AIWorkoutPersonalization
+          userProfile={profile}
+          onWorkoutGenerated={async (userData) => {
+            try {
+              const workoutPlan = await aiWorkout.generateWorkoutPlan(userData);
+              console.log('AI Generated Workout Plan:', workoutPlan);
+              setShowAIPersonalization(false);
+              // TODO: Integrate the AI workout plan into the app
+            } catch (error) {
+              console.error('Error generating workout:', error);
+            }
+          }}
+          isLoading={aiWorkout.isLoading}
+          error={aiWorkout.error}
+        />
+      )}
     </div>
   );
 };
