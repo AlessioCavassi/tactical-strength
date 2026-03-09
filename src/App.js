@@ -11,6 +11,8 @@ import { useWorkouts } from './hooks/useWorkouts';
 import { useUserProfile } from './hooks/useUserProfile';
 import { useExerciseNotes } from './hooks/useExerciseNotes';
 import { useExerciseHistory } from './hooks/useExerciseHistory';
+import { useGamification } from './hooks/useGamification';
+import GamificationBar from './components/GamificationBar';
 
 const App = () => {
   const { user, loading, logout } = useAuth();
@@ -20,6 +22,7 @@ const App = () => {
   const { workouts, saveWorkout, deleteWorkout } = useWorkouts(user?.uid);
   const { getNote, saveNote } = useExerciseNotes(user?.uid);
   const { getLastWorkout, getPR, calc1RM, checkAndSavePR } = useExerciseHistory(user?.uid);
+  const gamification = useGamification(user?.uid);
 
   const userLevel = profile?.level || 'beginner';
   const currentDayData = exercisesData[currentDay];
@@ -42,6 +45,8 @@ const App = () => {
         setsReps: exercise?.setsReps || '',
         completed: true,
       });
+      // Gamification: record exercise
+      if (gamification.recordExercise) gamification.recordExercise();
     }
   };
 
@@ -110,6 +115,18 @@ const App = () => {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           </button>
         </div>
+
+        {/* Gamification */}
+        <GamificationBar
+          stats={gamification.stats}
+          currentLevel={gamification.currentLevel}
+          nextLevel={gamification.nextLevel}
+          xpProgress={gamification.xpProgress}
+          earnedBadges={gamification.earnedBadges}
+          allBadges={gamification.allBadges}
+          newBadge={gamification.newBadge}
+          levelUp={gamification.levelUp}
+        />
 
         {/* Section label */}
         <p className="text-white/30 text-xs font-semibold uppercase tracking-widest text-center mb-5">Programma</p>

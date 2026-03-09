@@ -180,7 +180,19 @@ const ExerciseModal = ({
                 </div>
               )}
 
-              {/* Video button */}
+              {/* Video buttons */}
+              {exercise.instagramUrl && (
+                <a href={exercise.instagramUrl} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2.5 glass-light rounded-xl p-3 active:scale-[0.98] transition-transform">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)', opacity: 0.8}}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="white" strokeWidth="2"/><circle cx="12" cy="12" r="5" fill="none" stroke="white" strokeWidth="2"/><circle cx="17.5" cy="6.5" r="1.5" fill="white"/></svg>
+                  </div>
+                  <div>
+                    <p className="text-white/80 text-xs font-semibold">Guarda su Instagram</p>
+                    <p className="text-white/30 text-[9px]">Reel · Esecuzione corretta da PT</p>
+                  </div>
+                </a>
+              )}
               {exercise.videoUrl && (
                 <a href={exercise.videoUrl} target="_blank" rel="noopener noreferrer"
                   className="flex items-center gap-2.5 glass-light rounded-xl p-3 active:scale-[0.98] transition-transform">
@@ -188,8 +200,8 @@ const ExerciseModal = ({
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-red-400"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                   </div>
                   <div>
-                    <p className="text-white/80 text-xs font-semibold">Guarda il video esecuzione</p>
-                    <p className="text-white/30 text-[9px]">YouTube · Come eseguire correttamente</p>
+                    <p className="text-white/80 text-xs font-semibold">Video completo</p>
+                    <p className="text-white/30 text-[9px]">YouTube · Tutorial dettagliato</p>
                   </div>
                 </a>
               )}
