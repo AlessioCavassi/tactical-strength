@@ -8,81 +8,43 @@ const defaultTabs = [
   {
     id: "tab1",
     label: "Forza",
-    content: (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full h-full">
-        <img
-          src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop&auto=format"
-          alt="Forza"
-          className="rounded-lg w-full h-48 md:h-60 object-cover shadow-[0_0_20px_rgba(0,0,0,0.2)] border-none"
-        />
-        <div className="flex flex-col gap-y-2">
-          <h2 className="text-xl md:text-2xl font-bold text-white">
-            Giorni di Forza
-          </h2>
-          <p className="text-sm text-gray-300">
-            Sviluppa potenza pura con esercizi base come trazioni, rematori e piegamenti. 
-            Costruisci una foundation solida per risultati duraturi.
-          </p>
-          <div className="flex gap-2 mt-2">
-            <span className="px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-full">Giorno 1</span>
-            <span className="px-2 py-1 bg-red-500/20 text-red-400 text-xs rounded-full">Giorno 4</span>
-          </div>
-        </div>
-      </div>
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 4v16"/><path d="M18 4v16"/><path d="M6 12h12"/><circle cx="6" cy="4" r="2"/><circle cx="6" cy="20" r="2"/><circle cx="18" cy="4" r="2"/><circle cx="18" cy="20" r="2"/></svg>
     ),
+    color: "green",
+    days: [1, 4],
+    title: "Giorni di Forza",
+    desc: "Trazioni, rematori, piegamenti. Potenza pura e base solida.",
   },
   {
     id: "tab2",
     label: "Gambe",
-    content: (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full h-full">
-        <img
-          src="https://images.unsplash.com/photo-1506543730435-e2c1d4553a84?w=400&h=300&fit=crop&auto=format"
-          alt="Gambe"
-          className="rounded-lg w-full h-48 md:h-60 object-cover shadow-[0_0_20px_rgba(0,0,0,0.2)] border-none"
-        />
-        <div className="flex flex-col gap-y-2">
-          <h2 className="text-xl md:text-2xl font-bold text-white">
-            Gambe Tattiche
-          </h2>
-          <p className="text-sm text-gray-300">
-            Rinforza i muscoli chiave con movimenti safe per le ginocchia. 
-            Stacchi rumeni, affondi e lavoro cardio a impatto zero.
-          </p>
-          <div className="flex gap-2 mt-2">
-            <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded-full">Giorno 2</span>
-          </div>
-        </div>
-      </div>
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 2a5 5 0 015 5v4a5 5 0 01-10 0V7a5 5 0 015-5z"/><path d="M9 16l-2 6"/><path d="M15 16l2 6"/></svg>
     ),
+    color: "blue",
+    days: [2],
+    title: "Gambe Tattiche",
+    desc: "Stacchi rumeni, affondi. Safe per le ginocchia.",
   },
   {
     id: "tab3",
     label: "Recupero",
-    content: (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full h-full">
-        <img
-          src="https://images.unsplash.com/photo-1522428938647-2baa7c899f2f?w=400&h=300&fit=crop&auto=format"
-          alt="Recupero"
-          className="rounded-lg w-full h-48 md:h-60 object-cover shadow-[0_0_20px_rgba(0,0,0,0.2)] border-none"
-        />
-        <div className="flex flex-col gap-y-2">
-          <h2 className="text-xl md:text-2xl font-bold text-white">
-            Recupero Attivo
-          </h2>
-          <p className="text-sm text-gray-300">
-            Pilates Reformer e condizionamento metabolico. 
-            Allunga i muscoli e accelera il metabolismo per risultati migliori.
-          </p>
-          <div className="flex gap-2 mt-2">
-            <span className="px-2 py-1 bg-yellow-500/20 text-yellow-400 text-xs rounded-full">Giorno 3</span>
-            <span className="px-2 py-1 bg-orange-500/20 text-orange-400 text-xs rounded-full">Giorno 5</span>
-          </div>
-        </div>
-      </div>
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
     ),
+    color: "yellow",
+    days: [3, 5],
+    title: "Recupero Attivo",
+    desc: "Pilates, MetCon, mobilità. Accelera il recupero.",
   },
 ];
+
+const colorMap = {
+  green: { bg: "bg-green-500/15", text: "text-green-400", border: "border-green-500/20" },
+  blue: { bg: "bg-blue-500/15", text: "text-blue-400", border: "border-blue-500/20" },
+  yellow: { bg: "bg-yellow-500/15", text: "text-yellow-400", border: "border-yellow-500/20" },
+};
 
 const AnimatedTabs = ({
   tabs = defaultTabs,
@@ -94,59 +56,57 @@ const AnimatedTabs = ({
   if (!tabs?.length) return null;
 
   return (
-    <div className={cn("w-full max-w-2xl mx-auto flex flex-col gap-y-4", className)}>
-      <div className="flex gap-2 flex-wrap bg-white/5 backdrop-blur-sm p-1 rounded-2xl border border-white/10">
+    <div className={cn("w-full flex flex-col gap-y-3", className)}>
+      {/* Tab bar */}
+      <div className="flex gap-1 glass-light p-1 rounded-2xl">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={cn(
-              "relative px-4 py-2 text-sm font-medium rounded-xl text-white/80 hover:text-white outline-none transition-colors"
-            )}
+            className="relative flex-1 px-3 py-2.5 text-xs font-semibold rounded-xl text-white/60 outline-none transition-colors active:scale-[0.97]"
           >
             {activeTab === tab.id && (
               <motion.div
                 layoutId="active-tab"
-                className="absolute inset-0 bg-white/10 backdrop-blur-sm shadow-lg rounded-xl border border-white/20"
-                transition={{ type: "spring", duration: 0.6, bounce: 0.2 }}
+                className="absolute inset-0 bg-white/10 backdrop-blur-sm rounded-xl border border-white/15"
+                transition={{ type: "spring", duration: 0.5, bounce: 0.15 }}
               />
             )}
-            <span className="relative z-10">{tab.label}</span>
+            <span className="relative z-10 flex items-center justify-center gap-1.5">
+              <span className={activeTab === tab.id ? 'text-white' : ''}>{tab.icon}</span>
+              <span className={activeTab === tab.id ? 'text-white' : ''}>{tab.label}</span>
+            </span>
           </button>
         ))}
       </div>
 
-      <div className="p-6 bg-white/5 backdrop-blur-sm shadow-xl rounded-2xl border border-white/10 min-h-64">
+      {/* Content */}
+      <div className="glass-light rounded-2xl p-4 min-h-[140px]">
         {tabs.map(
           (tab) =>
             activeTab === tab.id && (
               <motion.div
                 key={tab.id}
-                initial={{
-                  opacity: 0,
-                  scale: 0.95,
-                  y: 20,
-                  filter: "blur(4px)",
-                }}
-                animate={{ 
-                  opacity: 1, 
-                  scale: 1, 
-                  y: 0, 
-                  filter: "blur(0px)" 
-                }}
-                exit={{ 
-                  opacity: 0, 
-                  scale: 0.95, 
-                  y: -20, 
-                  filter: "blur(4px)" 
-                }}
-                transition={{
-                  duration: 0.4,
-                  ease: "circInOut",
-                  type: "spring",
-                }}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, type: "spring" }}
               >
-                {tab.content}
+                <div className="flex items-start gap-3">
+                  <div className={`w-10 h-10 rounded-xl ${colorMap[tab.color].bg} flex items-center justify-center flex-shrink-0 ${colorMap[tab.color].text}`}>
+                    {tab.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-white text-sm font-bold mb-1">{tab.title}</h3>
+                    <p className="text-white/40 text-xs leading-relaxed mb-3">{tab.desc}</p>
+                    <div className="flex gap-1.5">
+                      {tab.days.map(d => (
+                        <span key={d} className={`${colorMap[tab.color].bg} ${colorMap[tab.color].text} text-[10px] font-semibold px-2 py-1 rounded-lg`}>
+                          Giorno {d}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </motion.div>
             )
         )}

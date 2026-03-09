@@ -18,7 +18,7 @@ export const HeroFuturistic = () => {
   }, [visibleWords, titleWords.length]);
 
   return (
-    <div className="h-screen relative overflow-hidden bg-black flex items-center justify-center">
+    <div className="h-[85vh] sm:h-screen relative overflow-hidden bg-black flex items-center justify-center">
       <style>{`
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(30px) scale(0.96); filter: blur(8px); }

@@ -91,11 +91,28 @@ body {
 /* iOS input style */
 input[type="number"] {
   -moz-appearance: textfield;
+  appearance: textfield;
 }
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
+  appearance: none;
   margin: 0;
+}
+
+/* Prevent zoom on input focus (iOS) */
+input, select, textarea {
+  font-size: 16px !important;
+}
+
+/* Smooth overscroll */
+html {
+  overscroll-behavior: none;
+}
+
+/* Selection color */
+::selection {
+  background: rgba(10, 132, 255, 0.3);
 }
 
 /* Safe area for notch devices */
