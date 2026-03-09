@@ -4,7 +4,6 @@ import { doc, getDoc, setDoc, updateDoc, increment } from 'firebase/firestore';
 
 // XP rewards
 const XP_EXERCISE_COMPLETE = 25;
-const XP_DAY_COMPLETE = 100;
 const XP_STREAK_BONUS = 50;
 const XP_PR_BONUS = 75;
 const XP_NOTE_BONUS = 10;

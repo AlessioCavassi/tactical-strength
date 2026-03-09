@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { db } from '../firebase';
-import { doc, setDoc, onSnapshot, collection, query, where, orderBy } from 'firebase/firestore';
+import { doc, setDoc, onSnapshot, collection, query, orderBy } from 'firebase/firestore';
 
 export function useExerciseHistory(userId) {
   const [allWorkouts, setAllWorkouts] = useState([]);

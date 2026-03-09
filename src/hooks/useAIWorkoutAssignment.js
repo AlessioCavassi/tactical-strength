@@ -1,29 +1,100 @@
 import { useState, useCallback } from 'react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
+// ── STRICT RATE LIMITS (FREE TIER ONLY — ZERO COST) ──
+const MAX_REQUESTS_PER_HOUR = 5;
+const MAX_REQUESTS_PER_DAY = 20;
+const RATE_LIMIT_STORAGE_KEY = 'ai_workout_rate_limits';
+
+const getRateLimitData = () => {
+  try {
+    const stored = localStorage.getItem(RATE_LIMIT_STORAGE_KEY);
+    if (!stored) return { hourly: [], daily: [] };
+    return JSON.parse(stored);
+  } catch {
+    return { hourly: [], daily: [] };
+  }
+};
+
+const saveRateLimitData = (data) => {
+  localStorage.setItem(RATE_LIMIT_STORAGE_KEY, JSON.stringify(data));
+};
+
+const checkRateLimit = () => {
+  const now = Date.now();
+  const oneHourAgo = now - 60 * 60 * 1000;
+  const oneDayAgo = now - 24 * 60 * 60 * 1000;
+  const data = getRateLimitData();
+
+  // Clean old entries
+  data.hourly = data.hourly.filter(ts => ts > oneHourAgo);
+  data.daily = data.daily.filter(ts => ts > oneDayAgo);
+  saveRateLimitData(data);
+
+  if (data.hourly.length >= MAX_REQUESTS_PER_HOUR) {
+    const nextAvailable = Math.ceil((data.hourly[0] + 60 * 60 * 1000 - now) / 60000);
+    return { allowed: false, reason: `Limite orario raggiunto (${MAX_REQUESTS_PER_HOUR}/ora). Riprova tra ${nextAvailable} minuti.` };
+  }
+  if (data.daily.length >= MAX_REQUESTS_PER_DAY) {
+    const nextAvailable = Math.ceil((data.daily[0] + 24 * 60 * 60 * 1000 - now) / 3600000);
+    return { allowed: false, reason: `Limite giornaliero raggiunto (${MAX_REQUESTS_PER_DAY}/giorno). Riprova tra ${nextAvailable} ore.` };
+  }
+
+  return { allowed: true, remainingHourly: MAX_REQUESTS_PER_HOUR - data.hourly.length, remainingDaily: MAX_REQUESTS_PER_DAY - data.daily.length };
+};
+
+const recordRequest = () => {
+  const now = Date.now();
+  const data = getRateLimitData();
+  data.hourly.push(now);
+  data.daily.push(now);
+  saveRateLimitData(data);
+};
+
 const useAIWorkoutAssignment = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [lastAssignment, setLastAssignment] = useState(null);
+  const [rateLimitInfo, setRateLimitInfo] = useState(() => checkRateLimit());
 
   const generateWorkoutPlan = useCallback(async (userData) => {
+    // ── RATE LIMIT CHECK (enforced before every call) ──
+    const limit = checkRateLimit();
+    setRateLimitInfo(limit);
+    if (!limit.allowed) {
+      const msg = limit.reason;
+      setError(msg);
+      throw new Error(msg);
+    }
+
     setIsLoading(true);
     setError(null);
 
     try {
       const apiKey = process.env.REACT_APP_GEMINI_API_KEY;
       if (!apiKey) {
-        throw new Error('Gemini API key not configured');
+        throw new Error('Chiave API Gemini non configurata. Aggiungi REACT_APP_GEMINI_API_KEY in .env');
       }
 
       const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
+      // FREE TIER ONLY — gemini-2.0-flash is the stable free model
+      const model = genAI.getGenerativeModel({
+        model: 'gemini-2.0-flash',
+        generationConfig: {
+          maxOutputTokens: 2048,  // Cap output to stay well within free limits
+          temperature: 0.7,
+        },
+      });
 
       const prompt = createWorkoutPrompt(userData);
       
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const text = response.text();
+
+      // Record successful request for rate limiting
+      recordRequest();
+      setRateLimitInfo(checkRateLimit());
 
       const workoutPlan = parseWorkoutResponse(text, userData.level);
       
@@ -41,7 +112,8 @@ const useAIWorkoutAssignment = () => {
     generateWorkoutPlan,
     isLoading,
     error,
-    lastAssignment
+    lastAssignment,
+    rateLimitInfo
   };
 };
 

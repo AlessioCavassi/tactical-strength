@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { FaRobot, FaDumbbell, FaClock, FaCalendarAlt, FaBullseye, FaExclamationTriangle, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FaRobot, FaDumbbell, FaClock, FaCalendarAlt, FaBullseye, FaExclamationTriangle, FaChevronDown, FaChevronUp, FaTimes, FaShieldAlt } from 'react-icons/fa';
 
-const AIWorkoutPersonalization = ({ userProfile, onWorkoutGenerated, isLoading, error }) => {
+const AIWorkoutPersonalization = ({ userProfile, onWorkoutGenerated, onClose, isLoading, error, rateLimitInfo }) => {
   const [formData, setFormData] = useState({
     goals: userProfile?.goals || [],
     injuries: userProfile?.injuries || [],
@@ -11,21 +11,19 @@ const AIWorkoutPersonalization = ({ userProfile, onWorkoutGenerated, isLoading, 
     sessionDuration: userProfile?.sessionDuration || 45
   });
   
-  const [expandedSection, setExpandedSection] = useState(null);
+  const [expandedSection, setExpandedSection] = useState('goals');
 
   const goalOptions = [
-    'Build Strength', 'Increase Muscle', 'Fat Loss', 'Endurance', 
-    'Athletic Performance', 'Functional Fitness', 'Rehabilitation'
+    'Forza', 'Ipertrofia', 'Dimagrimento', 'Resistenza', 
+    'Performance Atletica', 'Fitness Funzionale', 'Riabilitazione'
   ];
 
   const injuryOptions = [
-    'Shoulder Issues', 'Lower Back Pain', 'Knee Problems', 'Neck Issues',
-    'Wrist Pain', 'Ankle Issues', 'Hip Problems', 'None'
+    'Spalle', 'Lombare', 'Ginocchia', 'Collo',
+    'Polsi', 'Caviglie', 'Anche', 'Nessuno'
   ];
 
-  const dayOptions = [
-    'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
-  ];
+  const dayOptions = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
 
   const durationOptions = [30, 45, 60, 75, 90];
 
@@ -39,7 +37,7 @@ const AIWorkoutPersonalization = ({ userProfile, onWorkoutGenerated, isLoading, 
   };
 
   const handleInjuryToggle = (injury) => {
-    if (injury === 'None') {
+    if (injury === 'Nessuno') {
       setFormData(prev => ({ ...prev, injuries: [] }));
     } else {
       setFormData(prev => ({
@@ -62,12 +60,10 @@ const AIWorkoutPersonalization = ({ userProfile, onWorkoutGenerated, isLoading, 
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
     const userData = {
       level: userProfile?.level || 'beginner',
       ...formData
     };
-    
     onWorkoutGenerated(userData);
   };
 
@@ -75,209 +71,223 @@ const AIWorkoutPersonalization = ({ userProfile, onWorkoutGenerated, isLoading, 
     setExpandedSection(expandedSection === section ? null : section);
   };
 
+  const rateLimited = rateLimitInfo && !rateLimitInfo.allowed;
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-        className="bg-white rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-      >
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-3">
-            <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-3 rounded-full">
-              <FaRobot className="text-white text-xl" />
+    <AnimatePresence>
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-end sm:items-center justify-center z-50">
+        <motion.div
+          initial={{ opacity: 0, y: 100 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 100 }}
+          transition={{ type: 'spring', damping: 25 }}
+          className="glass rounded-t-[28px] sm:rounded-[28px] p-5 max-w-lg w-full max-h-[92vh] overflow-y-auto"
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                <FaRobot className="text-white text-lg" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-white">AI Workout</h2>
+                <p className="text-white/40 text-[11px]">Piano personalizzato con AI</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-2xl font-bold text-gray-800">AI Workout Personalization</h2>
-              <p className="text-gray-600 text-sm">Get a custom workout plan tailored to your needs</p>
-            </div>
-          </div>
-        </div>
-
-        {error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2">
-            <FaExclamationTriangle className="text-red-500" />
-            <span className="text-red-700">{error}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Goals Section */}
-          <div className="border border-gray-200 rounded-lg overflow-hidden">
             <button
-              type="button"
-              onClick={() => toggleSection('goals')}
-              className="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between"
+              onClick={onClose}
+              className="w-8 h-8 rounded-xl glass-light flex items-center justify-center text-white/40 hover:text-white/70 transition-all"
             >
-              <div className="flex items-center space-x-2">
-                <FaBullseye className="text-purple-500" />
-                <span className="font-semibold text-gray-700">Your Goals</span>
-                <span className="text-sm text-gray-500">({formData.goals.length} selected)</span>
-              </div>
-              {expandedSection === 'goals' ? <FaChevronUp /> : <FaChevronDown />}
+              <FaTimes className="text-sm" />
             </button>
-            
-            {expandedSection === 'goals' && (
-              <div className="p-4 bg-white">
-                <div className="grid grid-cols-2 gap-3">
-                  {goalOptions.map(goal => (
-                    <label
-                      key={goal}
-                      className={`flex items-center space-x-2 p-3 rounded-lg border cursor-pointer transition-all ${
-                        formData.goals.includes(goal)
-                          ? 'border-purple-500 bg-purple-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={formData.goals.includes(goal)}
-                        onChange={() => handleGoalToggle(goal)}
-                        className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
-                      />
-                      <span className="text-sm font-medium">{goal}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* Injuries Section */}
-          <div className="border border-gray-200 rounded-lg overflow-hidden">
+          {/* Rate Limit Info */}
+          <div className="mb-4 p-3 rounded-xl glass-light flex items-center gap-2">
+            <FaShieldAlt className="text-green-400 text-sm flex-shrink-0" />
+            <div className="text-[10px] text-white/50">
+              {rateLimited ? (
+                <span className="text-orange-400">{rateLimitInfo.reason}</span>
+              ) : (
+                <span>Free tier — {rateLimitInfo?.remainingHourly ?? '?'} richieste/ora · {rateLimitInfo?.remainingDaily ?? '?'} richieste/giorno</span>
+              )}
+            </div>
+          </div>
+
+          {error && (
+            <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-2">
+              <FaExclamationTriangle className="text-red-400 text-sm flex-shrink-0" />
+              <span className="text-red-300 text-xs">{error}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Goals Section */}
+            <div className="rounded-2xl glass-light overflow-hidden">
+              <button
+                type="button"
+                onClick={() => toggleSection('goals')}
+                className="w-full px-4 py-3 flex items-center justify-between"
+              >
+                <div className="flex items-center gap-2">
+                  <FaBullseye className="text-purple-400 text-sm" />
+                  <span className="font-semibold text-white/80 text-sm">Obiettivi</span>
+                  <span className="text-[10px] text-white/30">({formData.goals.length})</span>
+                </div>
+                {expandedSection === 'goals' ? <FaChevronUp className="text-white/30 text-xs" /> : <FaChevronDown className="text-white/30 text-xs" />}
+              </button>
+              
+              {expandedSection === 'goals' && (
+                <div className="px-3 pb-3">
+                  <div className="grid grid-cols-2 gap-2">
+                    {goalOptions.map(goal => (
+                      <button
+                        key={goal}
+                        type="button"
+                        onClick={() => handleGoalToggle(goal)}
+                        className={`p-2.5 rounded-xl text-xs font-medium transition-all ${
+                          formData.goals.includes(goal)
+                            ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40'
+                            : 'glass-light text-white/50 border border-white/5 hover:border-white/10'
+                        }`}
+                      >
+                        {goal}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Injuries Section */}
+            <div className="rounded-2xl glass-light overflow-hidden">
+              <button
+                type="button"
+                onClick={() => toggleSection('injuries')}
+                className="w-full px-4 py-3 flex items-center justify-between"
+              >
+                <div className="flex items-center gap-2">
+                  <FaExclamationTriangle className="text-orange-400 text-sm" />
+                  <span className="font-semibold text-white/80 text-sm">Infortuni</span>
+                  <span className="text-[10px] text-white/30">({formData.injuries.length})</span>
+                </div>
+                {expandedSection === 'injuries' ? <FaChevronUp className="text-white/30 text-xs" /> : <FaChevronDown className="text-white/30 text-xs" />}
+              </button>
+              
+              {expandedSection === 'injuries' && (
+                <div className="px-3 pb-3">
+                  <div className="grid grid-cols-2 gap-2">
+                    {injuryOptions.map(injury => (
+                      <button
+                        key={injury}
+                        type="button"
+                        onClick={() => handleInjuryToggle(injury)}
+                        className={`p-2.5 rounded-xl text-xs font-medium transition-all ${
+                          (injury === 'Nessuno' && formData.injuries.length === 0) || formData.injuries.includes(injury)
+                            ? 'bg-orange-500/20 text-orange-300 border border-orange-500/40'
+                            : 'glass-light text-white/50 border border-white/5 hover:border-white/10'
+                        }`}
+                      >
+                        {injury}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Experience Level */}
+            <div className="rounded-2xl glass-light p-4">
+              <label className="flex items-center gap-2 text-sm font-semibold text-white/80 mb-3">
+                <FaDumbbell className="text-blue-400 text-sm" />
+                Esperienza
+              </label>
+              <select
+                value={formData.experience}
+                onChange={(e) => setFormData(prev => ({ ...prev, experience: e.target.value }))}
+                className="w-full p-3 rounded-xl bg-white/5 border border-white/10 text-white/80 text-sm focus:outline-none focus:border-purple-500/50"
+                required
+              >
+                <option value="" className="bg-gray-900">Seleziona esperienza</option>
+                <option value="Principiante (0-6 mesi)" className="bg-gray-900">Principiante (0-6 mesi)</option>
+                <option value="Intermedio (6-18 mesi)" className="bg-gray-900">Intermedio (6-18 mesi)</option>
+                <option value="Avanzato (18+ mesi)" className="bg-gray-900">Avanzato (18+ mesi)</option>
+                <option value="Esperto (3+ anni)" className="bg-gray-900">Esperto (3+ anni)</option>
+              </select>
+            </div>
+
+            {/* Preferred Training Days */}
+            <div className="rounded-2xl glass-light p-4">
+              <label className="flex items-center gap-2 text-sm font-semibold text-white/80 mb-3">
+                <FaCalendarAlt className="text-green-400 text-sm" />
+                Giorni di allenamento
+              </label>
+              <div className="grid grid-cols-7 gap-1.5">
+                {dayOptions.map(day => (
+                  <button
+                    key={day}
+                    type="button"
+                    onClick={() => handleDayToggle(day)}
+                    className={`py-2 rounded-xl text-[11px] font-semibold transition-all ${
+                      formData.preferredDays.includes(day)
+                        ? 'bg-green-500/20 text-green-300 border border-green-500/40'
+                        : 'glass-light text-white/40 border border-white/5'
+                    }`}
+                  >
+                    {day}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Session Duration */}
+            <div className="rounded-2xl glass-light p-4">
+              <label className="flex items-center gap-2 text-sm font-semibold text-white/80 mb-3">
+                <FaClock className="text-indigo-400 text-sm" />
+                Durata sessione
+              </label>
+              <div className="flex gap-2">
+                {durationOptions.map(duration => (
+                  <button
+                    key={duration}
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, sessionDuration: duration }))}
+                    className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                      formData.sessionDuration === duration
+                        ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40'
+                        : 'glass-light text-white/40 border border-white/5'
+                    }`}
+                  >
+                    {duration}'
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Submit Button */}
             <button
-              type="button"
-              onClick={() => toggleSection('injuries')}
-              className="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between"
+              type="submit"
+              disabled={isLoading || rateLimited || formData.goals.length === 0 || formData.preferredDays.length === 0}
+              className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-2xl hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-premium-sm"
             >
-              <div className="flex items-center space-x-2">
-                <FaExclamationTriangle className="text-orange-500" />
-                <span className="font-semibold text-gray-700">Injuries & Limitations</span>
-                <span className="text-sm text-gray-500">({formData.injuries.length} selected)</span>
-              </div>
-              {expandedSection === 'injuries' ? <FaChevronUp /> : <FaChevronDown />}
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div>
+                  <span className="text-sm">AI sta creando il piano...</span>
+                </>
+              ) : rateLimited ? (
+                <span className="text-sm">Limite raggiunto</span>
+              ) : (
+                <>
+                  <FaRobot />
+                  <span className="text-sm">Genera Piano AI</span>
+                </>
+              )}
             </button>
-            
-            {expandedSection === 'injuries' && (
-              <div className="p-4 bg-white">
-                <div className="grid grid-cols-2 gap-3">
-                  {injuryOptions.map(injury => (
-                    <label
-                      key={injury}
-                      className={`flex items-center space-x-2 p-3 rounded-lg border cursor-pointer transition-all ${
-                        (injury === 'None' && formData.injuries.length === 0) || formData.injuries.includes(injury)
-                          ? 'border-orange-500 bg-orange-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={injury === 'None' ? formData.injuries.length === 0 : formData.injuries.includes(injury)}
-                        onChange={() => handleInjuryToggle(injury)}
-                        className="w-4 h-4 text-orange-600 rounded focus:ring-orange-500"
-                      />
-                      <span className="text-sm font-medium">{injury}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Experience Level */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              <FaDumbbell className="inline mr-2 text-blue-500" />
-              Experience Level
-            </label>
-            <select
-              value={formData.experience}
-              onChange={(e) => setFormData(prev => ({ ...prev, experience: e.target.value }))}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              required
-            >
-              <option value="">Select your experience</option>
-              <option value="Beginner (0-6 months)">Beginner (0-6 months)</option>
-              <option value="Intermediate (6-18 months)">Intermediate (6-18 months)</option>
-              <option value="Advanced (18+ months)">Advanced (18+ months)</option>
-              <option value="Expert (3+ years)">Expert (3+ years)</option>
-            </select>
-          </div>
-
-          {/* Preferred Training Days */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              <FaCalendarAlt className="inline mr-2 text-green-500" />
-              Preferred Training Days
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              {dayOptions.map(day => (
-                <label
-                  key={day}
-                  className={`flex items-center justify-center p-2 rounded-lg border cursor-pointer transition-all text-sm ${
-                    formData.preferredDays.includes(day)
-                      ? 'border-green-500 bg-green-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={formData.preferredDays.includes(day)}
-                    onChange={() => handleDayToggle(day)}
-                    className="w-4 h-4 text-green-600 rounded focus:ring-green-500 mr-2"
-                  />
-                  <span className="font-medium">{day.slice(0, 3)}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Session Duration */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              <FaClock className="inline mr-2 text-indigo-500" />
-              Session Duration
-            </label>
-            <div className="flex space-x-2">
-              {durationOptions.map(duration => (
-                <button
-                  key={duration}
-                  type="button"
-                  onClick={() => setFormData(prev => ({ ...prev, sessionDuration: duration }))}
-                  className={`flex-1 py-2 px-3 rounded-lg border transition-all ${
-                    formData.sessionDuration === duration
-                      ? 'border-indigo-500 bg-indigo-50 text-indigo-700 font-semibold'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  {duration}min
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isLoading || formData.goals.length === 0 || formData.preferredDays.length === 0}
-            className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-          >
-            {isLoading ? (
-              <>
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                <span>AI is creating your workout...</span>
-              </>
-            ) : (
-              <>
-                <FaRobot />
-                <span>Generate AI Workout Plan</span>
-              </>
-            )}
-          </button>
-        </form>
-      </motion.div>
-    </div>
+          </form>
+        </motion.div>
+      </div>
+    </AnimatePresence>
   );
 };
 

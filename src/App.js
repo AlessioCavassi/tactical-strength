@@ -222,18 +222,19 @@ const App = () => {
       {showAIPersonalization && (
         <AIWorkoutPersonalization
           userProfile={profile}
+          onClose={() => setShowAIPersonalization(false)}
           onWorkoutGenerated={async (userData) => {
             try {
               const workoutPlan = await aiWorkout.generateWorkoutPlan(userData);
               console.log('AI Generated Workout Plan:', workoutPlan);
               setShowAIPersonalization(false);
-              // TODO: Integrate the AI workout plan into the app
-            } catch (error) {
-              console.error('Error generating workout:', error);
+            } catch (err) {
+              console.error('Error generating workout:', err);
             }
           }}
           isLoading={aiWorkout.isLoading}
           error={aiWorkout.error}
+          rateLimitInfo={aiWorkout.rateLimitInfo}
         />
       )}
     </div>
