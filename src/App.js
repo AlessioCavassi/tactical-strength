@@ -5,15 +5,19 @@ import HeroFuturistic from './components/ui/hero-futuristic.js';
 import { AnimatedTabs } from './components/ui/animated-tabs';
 import ProgressTable from './components/ProgressTable';
 import LoginScreen from './components/LoginScreen';
+import OnboardingScreen from './components/OnboardingScreen';
 import { useAuth } from './hooks/useAuth';
 import { useWorkouts } from './hooks/useWorkouts';
+import { useUserProfile } from './hooks/useUserProfile';
 
 const App = () => {
   const { user, loading, logout } = useAuth();
+  const { profile, loading: profileLoading, saveProfile, needsOnboarding } = useUserProfile(user?.uid);
   const [currentDay, setCurrentDay] = useState(1);
   const [completedExercises, setCompletedExercises] = useState({});
   const { workouts, saveWorkout, deleteWorkout } = useWorkouts(user?.uid);
 
+  const userLevel = profile?.level || 'beginner';
   const currentDayData = exercisesData[currentDay];
 
   const handleExerciseComplete = async (exerciseId, weight, reps) => {
@@ -48,7 +52,7 @@ const App = () => {
     }
   };
 
-  if (loading) {
+  if (loading || profileLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
@@ -58,6 +62,17 @@ const App = () => {
 
   if (!user) {
     return <LoginScreen />;
+  }
+
+  if (needsOnboarding) {
+    return (
+      <OnboardingScreen
+        user={user}
+        onComplete={async (onboardingData) => {
+          await saveProfile(onboardingData);
+        }}
+      />
+    );
   }
 
   const day = currentDayData;
@@ -147,6 +162,7 @@ const App = () => {
             day={day}
             exercises={day.exercises}
             onExerciseComplete={handleExerciseComplete}
+            userLevel={userLevel}
           />
         </div>
 

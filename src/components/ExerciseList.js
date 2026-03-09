@@ -1,7 +1,7 @@
 import React from 'react';
 import ExerciseModal from './ExerciseModal';
 
-const ExerciseList = ({ day, exercises, onExerciseComplete }) => {
+const ExerciseList = ({ day, exercises, onExerciseComplete, userLevel = 'beginner' }) => {
   const [selectedExercise, setSelectedExercise] = React.useState(null);
 
   const getDayGradient = (color) => {
@@ -62,6 +62,7 @@ const ExerciseList = ({ day, exercises, onExerciseComplete }) => {
           exercise={selectedExercise}
           onClose={() => setSelectedExercise(null)}
           onComplete={onExerciseComplete}
+          userLevel={userLevel}
         />
       )}
     </div>
