@@ -27,7 +27,8 @@ export const HeroFuturistic = ({ onLogin, loginLoading, isLanding = false }) => 
   ];
 
   return (
-    <div className={`${isLanding ? 'min-h-screen' : 'h-[85vh] sm:h-screen'} relative overflow-hidden bg-black flex flex-col items-center justify-center`}>
+    <div className={`${isLanding ? 'min-h-screen' : 'h-[85vh] sm:h-screen'} relative overflow-hidden flex flex-col items-center justify-center`}
+      style={{ background: 'var(--app-bg, #000)' }}>
       <style>{`
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(30px) scale(0.96); filter: blur(8px); }
@@ -80,11 +81,11 @@ export const HeroFuturistic = ({ onLogin, loginLoading, isLanding = false }) => 
       {/* Animated gradient orbs */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-72 h-72 rounded-full opacity-20"
-          style={{ background: 'radial-gradient(circle, #00ff88 0%, transparent 70%)', animation: 'orb-move-1 15s ease-in-out infinite' }} />
+          style={{ background: 'radial-gradient(circle, rgba(var(--orb1),1) 0%, transparent 70%)', animation: 'orb-move-1 15s ease-in-out infinite' }} />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full opacity-15"
-          style={{ background: 'radial-gradient(circle, #007aff 0%, transparent 70%)', animation: 'orb-move-2 18s ease-in-out infinite' }} />
+          style={{ background: 'radial-gradient(circle, rgba(var(--orb2),1) 0%, transparent 70%)', animation: 'orb-move-2 18s ease-in-out infinite' }} />
         <div className="absolute top-1/2 left-1/2 w-64 h-64 rounded-full opacity-10"
-          style={{ background: 'radial-gradient(circle, #ff9500 0%, transparent 70%)', animation: 'orb-move-3 12s ease-in-out infinite', transform: 'translate(-50%, -50%)' }} />
+          style={{ background: 'radial-gradient(circle, rgba(var(--orb3),1) 0%, transparent 70%)', animation: 'orb-move-3 12s ease-in-out infinite', transform: 'translate(-50%, -50%)' }} />
       </div>
 
       {/* Grain overlay */}

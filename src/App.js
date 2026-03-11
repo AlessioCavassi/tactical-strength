@@ -1,4 +1,6 @@
 import React, { useState, useCallback } from 'react';
+import { useTheme } from './hooks/useTheme';
+import ThemePicker from './components/ThemePicker';
 import { exercisesData } from './data/exercises';
 import ExerciseList from './components/ExerciseList';
 import HeroFuturistic from './components/ui/hero-futuristic.js';
@@ -40,6 +42,8 @@ const App = () => {
   const gamification = useGamification(user?.uid);
   const aiWorkout = useAIWorkoutAssignment();
   const [showAIPersonalization, setShowAIPersonalization] = useState(false);
+  const [showThemePicker, setShowThemePicker] = useState(false);
+  const { setTheme, themes, themeId } = useTheme();
 
   const userLevel = profile?.level || 'beginner';
   const currentDayData = exercisesData[currentDay];
@@ -119,7 +123,7 @@ const App = () => {
   const day = currentDayData;
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen" style={{ background: 'var(--app-bg, #000)' }}>
       {/* Main Content (no hero — it disappeared after login) */}
       <div id="main-content" className="max-w-md mx-auto px-5 py-8">
 
@@ -140,12 +144,29 @@ const App = () => {
               </p>
             </div>
           </div>
-          <button
-            onClick={logout}
-            className="w-8 h-8 rounded-xl glass-light flex items-center justify-center text-white/30 hover:text-white/60 transition-all-smooth active:scale-95"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Theme picker button */}
+            <button
+              onClick={() => setShowThemePicker(true)}
+              className="w-8 h-8 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
+              style={{ background: `linear-gradient(135deg, var(--accent-from), var(--accent-to))`, opacity: 0.8 }}
+              title="Cambia tema"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
+                <circle cx="12" cy="12" r="10"/>
+                <circle cx="12" cy="12" r="4"/>
+                <line x1="21.17" y1="8" x2="12" y2="8"/>
+                <line x1="3.95" y1="6.06" x2="8.54" y2="14"/>
+                <line x1="10.88" y1="21.94" x2="15.46" y2="14"/>
+              </svg>
+            </button>
+            <button
+              onClick={logout}
+              className="w-8 h-8 rounded-xl glass-light flex items-center justify-center text-white/30 hover:text-white/60 transition-all-smooth active:scale-95"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            </button>
+          </div>
         </div>
 
         {/* Gamification */}
@@ -256,6 +277,16 @@ const App = () => {
 
       {/* Bottom safe area */}
       <div className="h-20"></div>
+
+      {/* Theme Picker */}
+      {showThemePicker && (
+        <ThemePicker
+          themes={themes}
+          themeId={themeId}
+          setTheme={setTheme}
+          onClose={() => setShowThemePicker(false)}
+        />
+      )}
 
       {/* AI Workout Personalization Modal */}
       {showAIPersonalization && (

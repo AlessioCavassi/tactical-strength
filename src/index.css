@@ -4,6 +4,16 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
+:root {
+  --app-bg: #000000;
+  --orb1: 0,255,136;
+  --orb2: 0,122,255;
+  --orb3: 255,149,0;
+  --accent: #0a84ff;
+  --accent-from: #0a84ff;
+  --accent-to: #00c6ff;
+}
+
 * {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -14,7 +24,7 @@ body {
   margin: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
   font-weight: 400;
-  background: #000;
+  background: var(--app-bg, #000);
   color: #fff;
   overflow-x: hidden;
   letter-spacing: -0.01em;
