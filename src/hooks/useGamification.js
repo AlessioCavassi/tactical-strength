@@ -22,20 +22,62 @@ const LEVELS = [
   { level: 10, title: 'Leggenda', xpNeeded: 5500, emoji: '🏆' },
 ];
 
-// Badge definitions
+// Badge definitions — physical AND mental/psychological
 const BADGES = [
-  { id: 'first_workout', title: 'Prima Sessione', desc: 'Completa il tuo primo esercizio', emoji: '🎯', condition: (s) => s.totalExercises >= 1 },
-  { id: 'five_workouts', title: 'Costante', desc: 'Completa 5 esercizi', emoji: '🔄', condition: (s) => s.totalExercises >= 5 },
-  { id: 'ten_workouts', title: 'Macchina', desc: 'Completa 10 esercizi', emoji: '⚙️', condition: (s) => s.totalExercises >= 10 },
-  { id: 'twentyfive_workouts', title: 'Inarrestabile', desc: 'Completa 25 esercizi', emoji: '🚀', condition: (s) => s.totalExercises >= 25 },
-  { id: 'fifty_workouts', title: 'Veterano', desc: 'Completa 50 esercizi', emoji: '🎖️', condition: (s) => s.totalExercises >= 50 },
-  { id: 'streak_3', title: 'Tre di Fila', desc: '3 giorni di streak', emoji: '🔥', condition: (s) => s.bestStreak >= 3 },
-  { id: 'streak_7', title: 'Settimana Perfetta', desc: '7 giorni di streak', emoji: '💎', condition: (s) => s.bestStreak >= 7 },
-  { id: 'streak_14', title: 'Due Settimane', desc: '14 giorni di streak', emoji: '👑', condition: (s) => s.bestStreak >= 14 },
-  { id: 'first_pr', title: 'Primo Record', desc: 'Batti il tuo primo PR', emoji: '🏆', condition: (s) => s.totalPRs >= 1 },
-  { id: 'five_prs', title: 'Collezionista', desc: 'Batti 5 PR', emoji: '💪', condition: (s) => s.totalPRs >= 5 },
-  { id: 'note_taker', title: 'Studioso', desc: 'Scrivi la tua prima nota', emoji: '📝', condition: (s) => s.totalNotes >= 1 },
-  { id: 'all_days', title: 'Completo', desc: 'Allena tutti e 5 i giorni', emoji: '⭐', condition: (s) => s.daysCompleted >= 5 },
+  // ── FISICA: Volume ──
+  { id: 'first_workout', title: 'Prima Sessione', desc: 'Completa il tuo primo esercizio', emoji: '🎯', category: 'fisica', condition: (s) => s.totalExercises >= 1 },
+  { id: 'five_workouts', title: 'Costante', desc: 'Completa 5 esercizi', emoji: '🔄', category: 'fisica', condition: (s) => s.totalExercises >= 5 },
+  { id: 'ten_workouts', title: 'Macchina', desc: 'Completa 10 esercizi', emoji: '⚙️', category: 'fisica', condition: (s) => s.totalExercises >= 10 },
+  { id: 'twentyfive_workouts', title: 'Inarrestabile', desc: 'Completa 25 esercizi', emoji: '🚀', category: 'fisica', condition: (s) => s.totalExercises >= 25 },
+  { id: 'fifty_workouts', title: 'Veterano', desc: 'Completa 50 esercizi', emoji: '🎖️', category: 'fisica', condition: (s) => s.totalExercises >= 50 },
+  { id: 'hundred_workouts', title: 'Centurione', desc: 'Completa 100 esercizi', emoji: '💯', category: 'fisica', condition: (s) => s.totalExercises >= 100 },
+  // ── FISICA: Streak ──
+  { id: 'streak_3', title: 'Tre di Fila', desc: '3 giorni di streak', emoji: '🔥', category: 'fisica', condition: (s) => s.bestStreak >= 3 },
+  { id: 'streak_7', title: 'Settimana Perfetta', desc: '7 giorni di streak', emoji: '💎', category: 'fisica', condition: (s) => s.bestStreak >= 7 },
+  { id: 'streak_14', title: 'Due Settimane', desc: '14 giorni di streak', emoji: '👑', category: 'fisica', condition: (s) => s.bestStreak >= 14 },
+  { id: 'streak_30', title: 'Mese Tattico', desc: '30 giorni di streak', emoji: '🦅', category: 'fisica', condition: (s) => s.bestStreak >= 30 },
+  // ── FISICA: Performance ──
+  { id: 'first_pr', title: 'Primo Record', desc: 'Batti il tuo primo PR', emoji: '🏆', category: 'fisica', condition: (s) => s.totalPRs >= 1 },
+  { id: 'five_prs', title: 'Collezionista', desc: 'Batti 5 PR', emoji: '💪', category: 'fisica', condition: (s) => s.totalPRs >= 5 },
+  { id: 'ten_prs', title: 'Record Breaker', desc: 'Batti 10 PR', emoji: '⚡', category: 'fisica', condition: (s) => s.totalPRs >= 10 },
+  { id: 'all_days', title: 'Completo', desc: 'Allena tutti e 5 i giorni', emoji: '⭐', category: 'fisica', condition: (s) => s.daysCompleted >= 5 },
+  // ── MENTALE: Consapevolezza ──
+  { id: 'note_taker', title: 'Studioso', desc: 'Scrivi la tua prima nota', emoji: '📝', category: 'mentale', condition: (s) => s.totalNotes >= 1 },
+  { id: 'deep_thinker', title: 'Mindful', desc: 'Scrivi note su 5 esercizi diversi', emoji: '🧘', category: 'mentale', condition: (s) => s.totalNotes >= 5 },
+  { id: 'self_aware', title: 'Autoconsapevole', desc: 'Scrivi note su 15 esercizi', emoji: '🪞', category: 'mentale', condition: (s) => s.totalNotes >= 15 },
+  // ── MENTALE: Resilienza ──
+  { id: 'comeback', title: 'Rinascita', desc: 'Torna ad allenarti dopo una pausa', emoji: '🌅', category: 'mentale', condition: (s) => s.comebacks >= 1 },
+  { id: 'mental_warrior', title: 'Guerriero Mentale', desc: 'Completa 3 sessioni difficili (RPE 9+)', emoji: '🧠', category: 'mentale', condition: (s) => (s.highRpeSessions || 0) >= 3 },
+  { id: 'process_believer', title: 'Il Processo', desc: 'Allenati per 30 giorni totali (non consecutivi)', emoji: '🗓️', category: 'mentale', condition: (s) => (s.daysWorkedOut || []).length >= 30 },
+  { id: 'discipline', title: 'Disciplina', desc: 'Allenati in 3 giorni diversi della settimana', emoji: '⚔️', category: 'mentale', condition: (s) => s.daysCompleted >= 3 },
+  // ── MENTALE: Crescita ──
+  { id: 'level5', title: 'Forza Interiore', desc: 'Raggiungi il livello 5', emoji: '💫', category: 'mentale', condition: (s) => s.xp >= 1000 },
+  { id: 'level8', title: 'Elite Mentality', desc: 'Raggiungi il livello 8', emoji: '🌟', category: 'mentale', condition: (s) => s.xp >= 3000 },
+  { id: 'explorer', title: 'Curioso', desc: 'Prova esercizi da 4 giorni diversi', emoji: '🔭', category: 'mentale', condition: (s) => s.daysCompleted >= 4 },
+];
+
+// Post-workout motivational quotes (shown after completing exercises)
+export const WORKOUT_QUOTES = [
+  { text: "Il dolore che senti oggi è la forza che sentirai domani.", author: "Arnold Schwarzenegger" },
+  { text: "Non contare i giorni, fai sì che i giorni contino.", author: "Muhammad Ali" },
+  { text: "Il tuo corpo può farcela. È la tua mente che devi convincere.", author: "Anonimo" },
+  { text: "Il campione non è chi non cade mai, ma chi si rialza ogni volta.", author: "Vince Lombardi" },
+  { text: "La forza non viene dalla capacità fisica ma da una volontà indomabile.", author: "Mahatma Gandhi" },
+  { text: "Ogni allenamento che completi è una promessa mantenuta con te stesso.", author: "Tactical Strength PT" },
+  { text: "Non si tratta di essere il migliore. Si tratta di essere migliore di ieri.", author: "Anonimo" },
+  { text: "Il sudore è solo il grasso che piange.", author: "Anonimo" },
+  { text: "La mente si arrende prima dei muscoli. Ricordalo.", author: "Tactical Strength PT" },
+  { text: "Ogni ripetizione ti separa da chi hai deciso di diventare.", author: "David Goggins" },
+  { text: "La motivazione ti fa partire. L'abitudine ti fa andare avanti.", author: "Jim Ryun" },
+  { text: "Non fermarti quando sei stanco. Fermati quando hai finito.", author: "Anonimo" },
+  { text: "I vincitori fanno quello che i perdenti non vogliono fare.", author: "Anonimo" },
+  { text: "Il corpo raggiunge quello che la mente crede.", author: "Napoleon Hill" },
+  { text: "Costruisci ogni giorno come se fosse il primo mattone della versione migliore di te.", author: "Tactical Strength PT" },
+  { text: "L'allenamento è un dialogo onesto con te stesso. Niente bugie.", author: "Tactical Strength PT" },
+  { text: "La coerenza batte sempre il talento quando il talento non si allena.", author: "Tim Notke" },
+  { text: "Sii la persona che il tuo cane pensa che tu sia.", author: "Anonimo" },
+  { text: "Se non ti fa paura, non ti farà crescere.", author: "Tactical Strength PT" },
+  { text: "Il recupero non è debolezza. È tattica.", author: "Tactical Strength PT" },
 ];
 
 export function useGamification(userId) {

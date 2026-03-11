@@ -180,29 +180,19 @@ const ExerciseModal = ({
                 </div>
               )}
 
-              {/* Video buttons */}
+              {/* Video button — prominent for beginners */}
               {exercise.instagramUrl && (
                 <a href={exercise.instagramUrl} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-2.5 glass-light rounded-xl p-3 active:scale-[0.98] transition-transform">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)', opacity: 0.8}}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="white" strokeWidth="2"/><circle cx="12" cy="12" r="5" fill="none" stroke="white" strokeWidth="2"/><circle cx="17.5" cy="6.5" r="1.5" fill="white"/></svg>
+                  className="flex items-center gap-3 w-full p-4 rounded-2xl active:scale-[0.97] transition-transform shadow-premium-sm"
+                  style={{background: 'linear-gradient(135deg, #f09433 0%, #e6683c 20%, #dc2743 45%, #cc2366 75%, #bc1888 100%)'}}>
+                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="white" strokeWidth="2"/><circle cx="12" cy="12" r="5" fill="none" stroke="white" strokeWidth="2"/><circle cx="17.5" cy="6.5" r="1.5" fill="white"/></svg>
                   </div>
-                  <div>
-                    <p className="text-white/80 text-xs font-semibold">Guarda su Instagram</p>
-                    <p className="text-white/30 text-[9px]">Reel · Esecuzione corretta da PT</p>
+                  <div className="flex-1">
+                    <p className="text-white font-bold text-sm">▶ Guarda l'esecuzione corretta</p>
+                    <p className="text-white/70 text-[11px] mt-0.5">Instagram Reel dal tuo PT</p>
                   </div>
-                </a>
-              )}
-              {exercise.videoUrl && (
-                <a href={exercise.videoUrl} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-2.5 glass-light rounded-xl p-3 active:scale-[0.98] transition-transform">
-                  <div className="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-red-400"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                  </div>
-                  <div>
-                    <p className="text-white/80 text-xs font-semibold">Video completo</p>
-                    <p className="text-white/30 text-[9px]">YouTube · Tutorial dettagliato</p>
-                  </div>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" className="opacity-70"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
                 </a>
               )}
             </>
@@ -224,31 +214,48 @@ const ExerciseModal = ({
             </div>
           )}
 
-          {/* ===== INTERMEDIATE: Video compact ===== */}
-          {isIntermediate && exercise.videoUrl && (
-            <a href={exercise.videoUrl} target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-2 text-white/30 hover:text-white/50 transition-colors text-[10px]">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" className="text-red-400/50"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              Video esecuzione
+          {/* ===== INTERMEDIATE: Instagram button compact ===== */}
+          {isIntermediate && exercise.instagramUrl && (
+            <a href={exercise.instagramUrl} target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-3 w-full p-3.5 rounded-2xl active:scale-[0.97] transition-transform"
+              style={{background: 'linear-gradient(135deg, #f09433 0%, #dc2743 50%, #bc1888 100%)'}}>
+              <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="white" strokeWidth="2"/><circle cx="12" cy="12" r="5" fill="none" stroke="white" strokeWidth="2"/><circle cx="17.5" cy="6.5" r="1.5" fill="white"/></svg>
+              </div>
+              <div className="flex-1">
+                <p className="text-white font-bold text-xs">▶ Esecuzione corretta</p>
+                <p className="text-white/70 text-[10px]">Instagram Reel</p>
+              </div>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" className="opacity-70"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
             </a>
           )}
 
-          {/* ===== ADVANCED: Compact last + PR + 1RM inline ===== */}
+          {/* ===== ADVANCED: Compact last + PR + 1RM inline + instagram ===== */}
           {isAdvanced && (
-            <div className="flex gap-2">
-              {lastWorkout && (
-                <div className="glass-light rounded-xl p-2.5 flex-1 text-center">
-                  <p className="text-white/20 text-[8px] font-bold uppercase">Precedente</p>
-                  <p className="text-white/60 text-xs font-bold">{lastWorkout.weight}×{lastWorkout.reps}</p>
-                </div>
-              )}
-              {exercisePR && (
-                <div className="glass-light rounded-xl p-2.5 flex-1 text-center">
-                  <p className="text-white/20 text-[8px] font-bold uppercase">PR 1RM</p>
-                  <p className="text-yellow-400/70 text-xs font-bold">{exercisePR.estimated1RM}kg</p>
-                </div>
-              )}
-            </div>
+            <>
+              <div className="flex gap-2">
+                {lastWorkout && (
+                  <div className="glass-light rounded-xl p-2.5 flex-1 text-center">
+                    <p className="text-white/20 text-[8px] font-bold uppercase">Precedente</p>
+                    <p className="text-white/60 text-xs font-bold">{lastWorkout.weight}×{lastWorkout.reps}</p>
+                  </div>
+                )}
+                {exercisePR && (
+                  <div className="glass-light rounded-xl p-2.5 flex-1 text-center">
+                    <p className="text-white/20 text-[8px] font-bold uppercase">PR 1RM</p>
+                    <p className="text-yellow-400/70 text-xs font-bold">{exercisePR.estimated1RM}kg</p>
+                  </div>
+                )}
+                {exercise.instagramUrl && (
+                  <a href={exercise.instagramUrl} target="_blank" rel="noopener noreferrer"
+                    className="rounded-xl p-2.5 flex items-center justify-center gap-1.5 flex-shrink-0 active:scale-95 transition-transform"
+                    style={{background: 'linear-gradient(135deg, #e6683c, #bc1888)'}}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="white" strokeWidth="2"/><circle cx="12" cy="12" r="5" fill="none" stroke="white" strokeWidth="2"/><circle cx="17.5" cy="6.5" r="1.5" fill="white"/></svg>
+                    <span className="text-white text-[9px] font-bold">Reel</span>
+                  </a>
+                )}
+              </div>
+            </>
           )}
 
           {/* Sections (beginner: open, intermediate: collapsible, advanced: hidden) */}

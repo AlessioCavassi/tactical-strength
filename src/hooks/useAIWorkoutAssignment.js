@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { PT_KNOWLEDGE_BASE } from '../data/ptKnowledge';
 
 // ── STRICT RATE LIMITS (FREE TIER ONLY — ZERO COST) ──
 const MAX_REQUESTS_PER_HOUR = 5;
@@ -119,78 +120,76 @@ const useAIWorkoutAssignment = () => {
 
 const createWorkoutPrompt = (userData) => {
   const { level, goals, injuries, experience, preferredDays, sessionDuration } = userData;
-  
-  return `You are an expert fitness trainer specializing in tactical strength training. Create a personalized workout plan based on the following user profile:
 
-USER PROFILE:
-- Level: ${level} (beginner/intermediate/advanced)
-- Goals: ${goals.join(', ')}
-- Injuries/Limitations: ${injuries.length > 0 ? injuries.join(', ') : 'None'}
-- Experience: ${experience} months/years
-- Preferred Training Days: ${preferredDays.join(', ')}
-- Session Duration: ${sessionDuration} minutes
+  const injuryNote = injuries && injuries.length > 0 && !injuries.includes('none')
+    ? injuries.join(', ')
+    : 'Nessun problema fisico';
 
-AVAILABLE EXERCISES DATABASE:
-1. Push Press - explosive overhead movement
-2. Goblet Squat - lower body strength
-3. Renegade Row - core and back strength
-4. Turkish Get-Up - full body mobility
-5. Box Jumps - explosive power
-6. Kettlebell Swing - hip hinge power
-7. Pull-ups - upper body pulling
-8. Handstand Push-ups - overhead pressing
-9. Pistol Squats - single leg strength
-10. Muscle-ups - full body pulling/pushing
-11. L-sit - core strength
-12. Front Lever - static strength
-13. Back Lever - static strength
-14. Planche - static strength
-15. Human Flag - side core strength
-16. One Arm Push-up - unilateral strength
-17. One Arm Pull-up - unilateral pulling
+  const goalsText = goals && goals.length > 0 ? goals.join(', ') : 'forza generale';
 
-REQUIREMENTS:
-1. Select 4-6 exercises appropriate for the user's level and goals
-2. Consider injuries and modify exercises accordingly
-3. Structure for ${preferredDays.length} days per week
-4. Each session should not exceed ${sessionDuration} minutes
-5. Include sets, reps, and rest periods
-6. Provide progressions and regressions
-7. Focus on compound, functional movements
-8. Include warm-up and cool-down recommendations
+  return `Sei un personal trainer esperto di Tactical Strength. Devi creare un piano di allenamento personalizzato basandoti ESCLUSIVAMENTE sulla metodologia qui sotto e sul profilo dell'atleta.
 
-RESPONSE FORMAT (JSON):
+=== KNOWLEDGE BASE DEL PERSONAL TRAINER ===
+${PT_KNOWLEDGE_BASE}
+
+=== PROFILO ATLETA ===
+- Livello: ${level}
+- Obiettivi: ${goalsText}
+- Problemi fisici/infortuni: ${injuryNote}
+- Esperienza: ${experience}
+- Giorni disponibili a settimana: ${preferredDays ? preferredDays.length : 4}
+- Durata sessione: ${sessionDuration || 60} minuti
+
+=== DATABASE ESERCIZI DISPONIBILI (usa questi) ===
+TIRATA: Trazioni Assistite, Rematore Inverso TRX, Curl Bicipiti, Lat Machine
+GAMBE (salva-ginocchio): Stacchi Rumeni (RDL), Affondi Indietro, Leg Curl, Hip Thrust, Step-Up, Cyclette
+RECUPERO: Pilates Reformer, Stretching, Foam Rolling, Yoga, Mobilità
+SPINTA: Piegamenti Zavorrati, Military Press manubri, Dip assistito, Alzate Laterali, Pushdown Tricipiti
+CONDIZIONAMENTO: Kettlebell Swing, Farmer's Walk, Vogatore Concept 2, Assault Bike, Russian Twist, Circuito HIIT
+
+=== ISTRUZIONI ===
+1. Rispetta SEMPRE le limitazioni fisiche dell'atleta (infortuni).
+2. Scegli esercizi DAL DATABASE sopra, adattati al livello.
+3. Applica la periodizzazione della metodologia PT.
+4. Per il ginocchio operato: VIETATI squat profondi e leg press heavy.
+5. Includi note di coaching e cue tecnici in italiano.
+6. Il piano deve essere realistico per la durata sessione indicata.
+7. Aggiungi un consiglio mentale/psicologico per ogni giorno.
+
+=== FORMATO RISPOSTA (JSON PURO, niente testo fuori dal JSON) ===
 {
   "workoutPlan": {
     "level": "${level}",
-    "daysPerWeek": ${preferredDays.length},
-    "sessionDuration": ${sessionDuration},
-    "focus": ["primary", "goals"],
+    "daysPerWeek": ${preferredDays ? preferredDays.length : 4},
+    "sessionDuration": ${sessionDuration || 60},
+    "focus": ["obiettivo1", "obiettivo2"],
+    "ptNote": "Nota personale del PT per l'atleta basata sul suo profilo",
     "schedule": [
       {
-        "day": "Day 1",
+        "day": "Giorno 1 – Titolo",
+        "theme": "Tirata/Spinta/Gambe/Condizionamento/Recupero",
+        "mentalCue": "Consiglio mentale per questo allenamento",
         "exercises": [
           {
-            "name": "Exercise Name",
-            "sets": 3,
-            "reps": "8-12",
+            "name": "Nome Esercizio",
+            "sets": 4,
+            "reps": "8-10",
             "rest": "90s",
-            "difficulty": "moderate",
-            "modifications": "If injured, do X instead",
-            "progression": "Increase weight when comfortable"
+            "weight": "Suggerimento peso",
+            "coachingCue": "Cue tecnico del PT",
+            "modifications": "Modifica se c'è infortunio"
           }
         ],
-        "warmup": ["dynamic stretch 1", "dynamic stretch 2"],
-        "cooldown": ["static stretch 1", "static stretch 2"]
+        "warmup": ["esercizio riscaldamento 1", "esercizio riscaldamento 2"],
+        "cooldown": ["stretching 1", "stretching 2"]
       }
     ],
-    "progressionStrategy": "weekly progression plan",
-    "deloadFrequency": "every 4 weeks",
-    "notes": "specific coaching cues"
+    "progressionStrategy": "Strategia progressione settimanale",
+    "deloadFrequency": "ogni 4 settimane",
+    "nutritionTip": "Consiglio nutrizionale base",
+    "notes": "Note generali del PT"
   }
-}
-
-Generate only the JSON response, no additional text.`;
+}`;
 };
 
 const parseWorkoutResponse = (text, userLevel) => {
