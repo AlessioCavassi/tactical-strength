@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { useTheme } from './hooks/useTheme';
 import ThemePicker from './components/ThemePicker';
+import FloatingParticles from './components/FloatingParticles';
 import { exercisesData } from './data/exercises';
 import ExerciseList from './components/ExerciseList';
 import HeroFuturistic from './components/ui/hero-futuristic.js';
@@ -43,7 +44,7 @@ const App = () => {
   const aiWorkout = useAIWorkoutAssignment();
   const [showAIPersonalization, setShowAIPersonalization] = useState(false);
   const [showThemePicker, setShowThemePicker] = useState(false);
-  const { setTheme, themes, themeId } = useTheme();
+  const { setTheme, themes, themeId, currentTheme } = useTheme();
 
   const userLevel = profile?.level || 'beginner';
   const currentDayData = exercisesData[currentDay];
@@ -124,6 +125,9 @@ const App = () => {
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--app-bg, #000)' }}>
+      {currentTheme?.particles && currentTheme.particles !== 'none' && (
+        <FloatingParticles type={currentTheme.particles} color={currentTheme.accent} />
+      )}
       {/* Main Content (no hero — it disappeared after login) */}
       <div id="main-content" className="max-w-md mx-auto px-5 py-8">
 
@@ -194,8 +198,12 @@ const App = () => {
             {trialActive ? (
               <button
                 onClick={() => setShowAIPersonalization(true)}
-                className="w-full py-3.5 rounded-2xl font-semibold text-sm text-white flex items-center justify-center gap-2.5 shadow-premium-sm active:scale-[0.97] transition-all"
-                style={{ background: 'linear-gradient(135deg, #7c3aed, #db2777)' }}
+                className="w-full py-3.5 font-semibold text-sm text-white flex items-center justify-center gap-2.5 active:scale-[0.97] transition-all"
+                style={{
+                  background: 'linear-gradient(135deg, #7c3aed, #db2777)',
+                  borderRadius: 'var(--btn-radius, 16px)',
+                  boxShadow: '0 0 20px rgba(124,58,237,0.3), 0 8px 24px rgba(0,0,0,0.4)',
+                }}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/><path d="M9 3.5A9 9 0 0 1 21 12"/></svg>
                 Genera Piano AI · {daysLeft}gg rimasti
@@ -226,11 +234,17 @@ const App = () => {
             <button
               key={dayNum}
               onClick={() => setCurrentDay(parseInt(dayNum))}
-              className={`flex-shrink-0 w-14 h-14 rounded-2xl font-medium transition-all-smooth active:scale-95 ${
+              className={`flex-shrink-0 w-14 h-14 font-medium transition-all-smooth active:scale-95 ${
                 currentDay === parseInt(dayNum)
-                  ? `${getDayGradient(dayData.color)} text-white shadow-premium-sm`
+                  ? `${getDayGradient(dayData.color)} text-white`
                   : 'glass-light text-white/40 hover:text-white/70'
               }`}
+              style={{
+                borderRadius: 'var(--btn-radius, 16px)',
+                boxShadow: currentDay === parseInt(dayNum)
+                  ? `0 0 16px rgba(var(--glow-rgb), 0.3), 0 6px 18px rgba(0,0,0,0.4)`
+                  : 'none',
+              }}
             >
               <div className="text-[9px] font-medium opacity-60 leading-none mb-0.5">GG</div>
               <div className="text-base font-bold leading-none">{dayNum}</div>

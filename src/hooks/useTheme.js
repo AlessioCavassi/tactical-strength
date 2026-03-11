@@ -12,6 +12,8 @@ const applyTheme = (theme) => {
   r.setProperty('--accent', theme.accent);
   r.setProperty('--accent-from', theme.accentFrom);
   r.setProperty('--accent-to', theme.accentTo);
+  r.setProperty('--btn-radius', theme.btnRadius || '14px');
+  r.setProperty('--glow-rgb', theme.glowRgb || '0,122,255');
   document.body.style.background = theme.bg;
 };
 

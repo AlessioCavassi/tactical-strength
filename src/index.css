@@ -12,6 +12,8 @@
   --accent: #0a84ff;
   --accent-from: #0a84ff;
   --accent-to: #00c6ff;
+  --btn-radius: 12px;
+  --glow-rgb: 0,122,255;
 }
 
 * {
@@ -82,6 +84,20 @@ body {
 /* Apple spring transition */
 .transition-all-smooth {
   transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Theme-adaptive glow */
+.glow-accent {
+  box-shadow:
+    0 0 0 0.5px rgba(255,255,255,0.06),
+    0 0 18px rgba(var(--glow-rgb), 0.25),
+    0 8px 24px rgba(0,0,0,0.4);
+}
+
+.glow-accent-sm {
+  box-shadow:
+    0 0 12px rgba(var(--glow-rgb), 0.2),
+    0 4px 16px rgba(0,0,0,0.3);
 }
 
 /* Premium shadows */
