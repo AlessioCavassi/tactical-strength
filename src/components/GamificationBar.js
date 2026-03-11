@@ -1,20 +1,15 @@
 import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WORKOUT_QUOTES } from '../hooks/useGamification';
+import BadgeShowcase from './BadgeShowcase';
 
 export default function GamificationBar({ stats, currentLevel, nextLevel, xpProgress, earnedBadges, allBadges, newBadge, levelUp, workoutQuote }) {
   const [showBadges, setShowBadges] = React.useState(false);
-  const [badgeFilter, setBadgeFilter] = React.useState('all');
 
   const todayQuote = useMemo(() => {
     const idx = Math.floor(Date.now() / 86400000) % WORKOUT_QUOTES.length;
     return WORKOUT_QUOTES[idx];
   }, []);
-
-  const visibleBadges = useMemo(() => {
-    if (badgeFilter === 'all') return allBadges;
-    return allBadges.filter(b => b.category === badgeFilter);
-  }, [allBadges, badgeFilter]);
 
   if (!stats) return null;
 
@@ -156,48 +151,15 @@ export default function GamificationBar({ stats, currentLevel, nextLevel, xpProg
         <p className="text-white/25 text-[9px] mt-1 text-right">— {todayQuote.author}</p>
       </div>
 
-      {/* Badge Grid (expandable) */}
+      {/* Badge Showcase full-screen popup */}
       <AnimatePresence>
         {showBadges && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden mb-6"
-          >
-            {/* Filter tabs */}
-            <div className="flex gap-2 mb-3 justify-center">
-              {['all', 'fisica', 'mentale'].map(f => (
-                <button
-                  key={f}
-                  onClick={() => setBadgeFilter(f)}
-                  className={`px-3 py-1 rounded-full text-[10px] font-bold transition-all active:scale-95 ${
-                    badgeFilter === f ? 'bg-blue-500/30 text-blue-300' : 'glass-light text-white/30'
-                  }`}
-                >
-                  {f === 'all' ? '🏅 Tutti' : f === 'fisica' ? '💪 Fisica' : '🧠 Mentale'}
-                </button>
-              ))}
-            </div>
-            <div className="grid grid-cols-4 gap-2">
-              {visibleBadges.map(badge => {
-                const earned = earnedBadges.some(b => b.id === badge.id);
-                return (
-                  <div
-                    key={badge.id}
-                    className={`glass-light rounded-xl p-2 text-center transition-all ${earned ? '' : 'opacity-20 grayscale'}`}
-                    title={badge.desc}
-                  >
-                    <span className="text-lg block">{badge.emoji}</span>
-                    <p className="text-white/60 text-[8px] font-bold mt-1 leading-tight">{badge.title}</p>
-                    {badge.category === 'mentale' && earned && (
-                      <span className="text-[7px] text-purple-400/60 font-semibold">mentale</span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </motion.div>
+          <BadgeShowcase
+            allBadges={allBadges}
+            earnedBadges={earnedBadges}
+            stats={stats}
+            onClose={() => setShowBadges(false)}
+          />
         )}
       </AnimatePresence>
     </>

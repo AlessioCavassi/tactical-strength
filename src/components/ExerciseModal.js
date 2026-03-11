@@ -136,13 +136,13 @@ const ExerciseModal = ({
       }
     }
     if (onSaveNote && note !== noteText) onSaveNote(exercise.id, note);
-    onComplete(exercise.id, bestWeight, bestValue, sets);
+    onComplete(exercise.id, bestWeight, bestValue, sets, rpe || 0);
     onClose();
   };
 
   const handleSimpleComplete = () => {
     if (onSaveNote && note !== noteText) onSaveNote(exercise.id, note);
-    onComplete(exercise.id, '', '', []);
+    onComplete(exercise.id, '', '', [], rpe || 0);
     onClose();
   };
 
@@ -433,13 +433,29 @@ const ExerciseModal = ({
                 </div>
               )}
 
-              {/* RPE (advanced) */}
+              {/* RPE — simplified for beginner/intermediate, full scale for advanced */}
+              {allSetsDone && !isAdvanced && (
+                <div className="glass-light rounded-2xl p-3.5">
+                  <p className="text-white/30 text-[9px] font-semibold uppercase tracking-wider mb-2.5 text-center">Come ti sei sentito?</p>
+                  <div className="flex gap-2">
+                    {[{v:5,e:'😊',l:'Facile'},{v:7,e:'💪',l:'Nella zona'},{v:9,e:'🔥',l:'Al massimo'}].map(({v,e,l}) => (
+                      <button key={v} onClick={() => setRpe(rpe === v ? 0 : v)}
+                        className={`flex-1 py-2.5 rounded-xl flex flex-col items-center gap-1 transition-all active:scale-95 ${
+                          rpe === v ? 'bg-blue-500/20 ring-1 ring-blue-500/40 text-white' : 'glass text-white/40'
+                        }`}>
+                        <span className="text-lg">{e}</span>
+                        <span className="text-[9px] font-semibold">{l}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
               {isAdvanced && (
                 <div>
                   <p className="text-white/20 text-[9px] font-semibold uppercase tracking-wider mb-1.5 text-center">RPE</p>
                   <div className="flex gap-1 justify-center">
                     {[6,7,8,9,10].map(v => (
-                      <button key={v} onClick={() => setRpe(v)}
+                      <button key={v} onClick={() => setRpe(rpe === v ? 0 : v)}
                         className={`w-9 h-9 rounded-xl text-xs font-bold transition-all active:scale-90 ${rpe === v ? 'gradient-blue text-white' : 'glass-light text-white/30'}`}>{v}</button>
                     ))}
                   </div>

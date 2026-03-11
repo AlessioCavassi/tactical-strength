@@ -21,6 +21,7 @@ import DayCompleteOverlay from './components/DayCompleteOverlay';
 import ProgressCharts from './components/ProgressCharts';
 import { PTStatusBadge, SendToPTButton } from './components/PTConnect';
 import { useHaptics } from './hooks/useHaptics';
+import AIInsightCard from './components/AIInsightCard';
 
 // ── Trial period: AI workout available for first 14 days after signup ──
 const TRIAL_DAYS = 14;
@@ -93,7 +94,7 @@ const App = () => {
     setTimeout(() => setWorkoutQuote(null), 5000);
   }, []);
 
-  const handleExerciseComplete = async (exerciseId, weight, reps, sets) => {
+  const handleExerciseComplete = async (exerciseId, weight, reps, sets, rpe) => {
     setCompletedExercises(prev => ({
       ...prev,
       [exerciseId]: { weight, reps, completedAt: new Date().toISOString() }
@@ -112,9 +113,11 @@ const App = () => {
           weight: parseFloat(s.weight) || 0,
           value: parseFloat(s.value) || 0,
         })),
+        rpe: rpe || 0,
         completed: true,
       });
       if (gamification.recordExercise) gamification.recordExercise();
+      if (rpe > 0 && gamification.recordRPE) gamification.recordRPE(rpe);
       vibrate('success');
       if (Math.random() < 0.3) {
         showRandomQuote();
@@ -340,6 +343,12 @@ const App = () => {
         {/* Progress Section */}
         <div className="h-px bg-white/5 mx-8 mb-8 mt-8"></div>
         <p className="text-white/30 text-xs font-semibold uppercase tracking-widest text-center mb-5">Progressi</p>
+        <AIInsightCard
+          profile={{ ...profile, uid: user?.uid }}
+          workouts={workouts}
+          prs={prs}
+          gamStats={gamification.stats}
+        />
         <ProgressCharts workouts={workouts} />
         <div className="mt-6">
           <ProgressTable workouts={workouts} prs={prs} profile={profile} onDelete={deleteWorkout} />

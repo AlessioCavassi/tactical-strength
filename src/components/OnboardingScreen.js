@@ -59,6 +59,29 @@ const INJURIES = [
   { id: 'wrist', emoji: '✋', label: 'Polsi' },
 ];
 
+const AGE_RANGES = [
+  { id: 'u20',   label: '< 20',   emoji: '🌱' },
+  { id: '20-25', label: '20–25',  emoji: '🏃' },
+  { id: '26-30', label: '26–30',  emoji: '💪' },
+  { id: '31-40', label: '31–40',  emoji: '🎯' },
+  { id: '41-50', label: '41–50',  emoji: '🔥' },
+  { id: '50+',   label: '50+',    emoji: '🦅' },
+];
+
+const FREQ_OPTIONS = [
+  { id: '2', label: '2 giorni', desc: 'Manutenzione' },
+  { id: '3', label: '3 giorni', desc: 'Progressione solida' },
+  { id: '4', label: '4 giorni', desc: 'Intensità alta' },
+  { id: '5', label: '5 giorni', desc: 'Atleta dedicato' },
+];
+
+const DURATION_OPTIONS = [
+  { id: '30',  label: '30 min', desc: 'Express' },
+  { id: '45',  label: '45 min', desc: 'Standard' },
+  { id: '60',  label: '60 min', desc: 'Completo' },
+  { id: '90',  label: '90 min', desc: 'Full session' },
+];
+
 const pageVariants = {
   enter: { opacity: 0, x: 40, filter: 'blur(4px)' },
   center: { opacity: 1, x: 0, filter: 'blur(0px)' },
@@ -71,11 +94,15 @@ export default function OnboardingScreen({ user, onComplete }) {
     level: '',
     goals: [],
     experience: '',
+    ageRange: '',
+    bodyWeight: '',
+    weeklyFrequency: '',
+    sessionDuration: '',
     injuries: [],
     displayName: user?.displayName || '',
   });
 
-  const totalSteps = 4;
+  const totalSteps = 6;
   const progress = ((step + 1) / totalSteps) * 100;
 
   const canContinue = () => {
@@ -83,7 +110,9 @@ export default function OnboardingScreen({ user, onComplete }) {
       case 0: return !!data.level;
       case 1: return data.goals.length > 0;
       case 2: return !!data.experience;
-      case 3: return data.injuries.length > 0;
+      case 3: return !!data.ageRange;
+      case 4: return !!data.weeklyFrequency && !!data.sessionDuration;
+      case 5: return data.injuries.length > 0;
       default: return false;
     }
   };
@@ -245,6 +274,94 @@ export default function OnboardingScreen({ user, onComplete }) {
 
           {step === 3 && (
             <motion.div key="step3" variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3 }}>
+              <h1 className="text-2xl font-black text-white tracking-tight mb-2">I tuoi dati</h1>
+              <p className="text-white/40 text-sm mb-8">Personalizzare le statistiche e i suggerimenti AI</p>
+
+              <p className="text-white/40 text-xs font-semibold uppercase tracking-wider mb-3">Età</p>
+              <div className="grid grid-cols-3 gap-2 mb-8">
+                {AGE_RANGES.map(a => (
+                  <button
+                    key={a.id}
+                    onClick={() => setData(prev => ({ ...prev, ageRange: a.id }))}
+                    className={`p-3.5 rounded-2xl border text-center transition-all-smooth active:scale-[0.97] ${
+                      data.ageRange === a.id
+                        ? 'bg-blue-500/10 border-blue-500/30'
+                        : 'glass-light border-transparent'
+                    }`}
+                  >
+                    <span className="text-xl block mb-1">{a.emoji}</span>
+                    <p className={`font-bold text-xs ${
+                      data.ageRange === a.id ? 'text-blue-400' : 'text-white/60'
+                    }`}>{a.label}</p>
+                  </button>
+                ))}
+              </div>
+
+              <p className="text-white/40 text-xs font-semibold uppercase tracking-wider mb-3">Peso attuale (opzionale)</p>
+              <div className="flex items-center glass-light rounded-2xl px-4 py-3.5 gap-3">
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  placeholder="es. 75"
+                  value={data.bodyWeight}
+                  onChange={e => setData(prev => ({ ...prev, bodyWeight: e.target.value }))}
+                  className="flex-1 bg-transparent text-white text-lg font-bold outline-none placeholder-white/15"
+                />
+                <span className="text-white/30 text-sm font-semibold">kg</span>
+              </div>
+              <p className="text-white/15 text-[10px] mt-2 ml-1">Usato per calcolare la forza relativa e i tuoi progressi personali</p>
+            </motion.div>
+          )}
+
+          {step === 4 && (
+            <motion.div key="step4" variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3 }}>
+              <h1 className="text-2xl font-black text-white tracking-tight mb-2">Il tuo piano</h1>
+              <p className="text-white/40 text-sm mb-8">Quante volte ti alleni e per quanto tempo?</p>
+
+              <p className="text-white/40 text-xs font-semibold uppercase tracking-wider mb-3">Giorni a settimana</p>
+              <div className="grid grid-cols-2 gap-2.5 mb-8">
+                {FREQ_OPTIONS.map(f => (
+                  <button
+                    key={f.id}
+                    onClick={() => setData(prev => ({ ...prev, weeklyFrequency: f.id }))}
+                    className={`p-4 rounded-2xl border text-left transition-all-smooth active:scale-[0.97] ${
+                      data.weeklyFrequency === f.id
+                        ? 'bg-blue-500/10 border-blue-500/30'
+                        : 'glass-light border-transparent'
+                    }`}
+                  >
+                    <p className={`font-bold text-sm ${
+                      data.weeklyFrequency === f.id ? 'text-blue-400' : 'text-white/70'
+                    }`}>{f.label}</p>
+                    <p className="text-white/25 text-[10px] mt-0.5">{f.desc}</p>
+                  </button>
+                ))}
+              </div>
+
+              <p className="text-white/40 text-xs font-semibold uppercase tracking-wider mb-3">Durata sessione</p>
+              <div className="grid grid-cols-2 gap-2.5">
+                {DURATION_OPTIONS.map(d => (
+                  <button
+                    key={d.id}
+                    onClick={() => setData(prev => ({ ...prev, sessionDuration: d.id }))}
+                    className={`p-4 rounded-2xl border text-left transition-all-smooth active:scale-[0.97] ${
+                      data.sessionDuration === d.id
+                        ? 'bg-purple-500/10 border-purple-500/30'
+                        : 'glass-light border-transparent'
+                    }`}
+                  >
+                    <p className={`font-bold text-sm ${
+                      data.sessionDuration === d.id ? 'text-purple-400' : 'text-white/70'
+                    }`}>{d.label}</p>
+                    <p className="text-white/25 text-[10px] mt-0.5">{d.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {step === 5 && (
+            <motion.div key="step5" variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3 }}>
               <h1 className="text-2xl font-black text-white tracking-tight mb-2">Problemi fisici?</h1>
               <p className="text-white/40 text-sm mb-8">Per adattare gli esercizi alle tue necessità</p>
               <div className="grid grid-cols-2 gap-3">

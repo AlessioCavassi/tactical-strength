@@ -41,6 +41,10 @@ const BADGES = [
   { id: 'five_prs', title: 'Collezionista', desc: 'Batti 5 PR', emoji: '💪', category: 'fisica', condition: (s) => s.totalPRs >= 5 },
   { id: 'ten_prs', title: 'Record Breaker', desc: 'Batti 10 PR', emoji: '⚡', category: 'fisica', condition: (s) => s.totalPRs >= 10 },
   { id: 'all_days', title: 'Completo', desc: 'Allena tutti e 5 i giorni', emoji: '⭐', category: 'fisica', condition: (s) => s.daysCompleted >= 5 },
+  // ── FISICA: Speciali ──
+  { id: 'early_bird', title: 'Alba del Guerriero', desc: 'Completa 5 allenamenti prima delle 8:00', emoji: '🌅', category: 'fisica', condition: (s) => (s.earlyWorkouts || 0) >= 5 },
+  { id: 'night_owl', title: 'Lupo Notturno', desc: 'Completa 5 allenamenti dopo le 21:00', emoji: '🌙', category: 'fisica', condition: (s) => (s.lateWorkouts || 0) >= 5 },
+  { id: 'pr_machine', title: 'PR Machine', desc: 'Batti 3 PR nella stessa settimana', emoji: '💥', category: 'fisica', condition: (s) => (s.weeklyPRs || 0) >= 3 },
   // ── MENTALE: Consapevolezza ──
   { id: 'note_taker', title: 'Studioso', desc: 'Scrivi la tua prima nota', emoji: '📝', category: 'mentale', condition: (s) => s.totalNotes >= 1 },
   { id: 'deep_thinker', title: 'Mindful', desc: 'Scrivi note su 5 esercizi diversi', emoji: '🧘', category: 'mentale', condition: (s) => s.totalNotes >= 5 },
@@ -54,6 +58,8 @@ const BADGES = [
   { id: 'level5', title: 'Forza Interiore', desc: 'Raggiungi il livello 5', emoji: '💫', category: 'mentale', condition: (s) => s.xp >= 1000 },
   { id: 'level8', title: 'Elite Mentality', desc: 'Raggiungi il livello 8', emoji: '🌟', category: 'mentale', condition: (s) => s.xp >= 3000 },
   { id: 'explorer', title: 'Curioso', desc: 'Prova esercizi da 4 giorni diversi', emoji: '🔭', category: 'mentale', condition: (s) => s.daysCompleted >= 4 },
+  { id: 'hard_session', title: 'Oltre il Limite', desc: 'Completa una sessione con RPE 10 su tutti gli esercizi', emoji: '🤯', category: 'mentale', condition: (s) => (s.perfectRPE10 || 0) >= 1 },
+  { id: 'consistency_king', title: 'Re della Costanza', desc: 'Allenati per 4 settimane consecutive (almeno 2 giorni/sett.)', emoji: '👑', category: 'mentale', condition: (s) => (s.consistentWeeks || 0) >= 4 },
 ];
 
 // Post-workout motivational quotes (shown after completing exercises)
@@ -197,24 +203,26 @@ export function useGamification(userId) {
   const recordExercise = useCallback(async () => {
     if (!userId || !stats) return;
 
-    const today = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const hour = now.getHours();
     const lastDate = stats.lastWorkoutDate;
     const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
 
     let newStreak = stats.currentStreak;
+    let comebacks = stats.comebacks || 0;
     if (lastDate === today) {
       // Same day, no streak change
     } else if (lastDate === yesterday) {
       newStreak = stats.currentStreak + 1;
     } else {
       newStreak = 1;
+      // Comeback: returning after 3+ day gap
+      if (lastDate && lastDate < yesterday) comebacks += 1;
     }
 
     const daysWorkedOut = [...new Set([...(stats.daysWorkedOut || []), today])];
-    const uniqueDays = new Set(daysWorkedOut.map(d => {
-      const date = new Date(d);
-      return date.getDay();
-    }));
+    const uniqueDays = new Set(daysWorkedOut.map(d => new Date(d).getDay()));
 
     const newStats = {
       ...stats,
@@ -224,6 +232,9 @@ export function useGamification(userId) {
       lastWorkoutDate: today,
       daysWorkedOut: daysWorkedOut.slice(-30),
       daysCompleted: uniqueDays.size,
+      comebacks,
+      earlyWorkouts: (stats.earlyWorkouts || 0) + (hour < 8 ? 1 : 0),
+      lateWorkouts:  (stats.lateWorkouts  || 0) + (hour >= 21 ? 1 : 0),
       xp: stats.xp + XP_EXERCISE_COMPLETE + (newStreak > stats.currentStreak ? XP_STREAK_BONUS : 0),
     };
 
@@ -256,6 +267,25 @@ export function useGamification(userId) {
       await setDoc(doc(db, 'users', userId, 'gamification', 'stats'), newStats);
     } catch (error) {
       console.error('Record PR error:', error);
+    }
+  }, [userId, stats, checkBadges]);
+
+  // Record RPE (Rate of Perceived Exertion: 1-10)
+  const recordRPE = useCallback(async (rpe) => {
+    if (!userId || !stats || !rpe) return;
+    const isHigh = rpe >= 9;
+    const newStats = {
+      ...stats,
+      highRpeSessions: (stats.highRpeSessions || 0) + (isHigh ? 1 : 0),
+      xp: stats.xp + (isHigh ? XP_PR_BONUS : 0), // bonus XP for pushing hard
+    };
+    const updatedBadges = await checkBadges(newStats);
+    newStats.unlockedBadges = updatedBadges;
+    setStats(newStats);
+    try {
+      await setDoc(doc(db, 'users', userId, 'gamification', 'stats'), newStats);
+    } catch (error) {
+      console.error('Record RPE error:', error);
     }
   }, [userId, stats, checkBadges]);
 
@@ -294,5 +324,6 @@ export function useGamification(userId) {
     recordExercise,
     recordPR,
     recordNote,
+    recordRPE,
   };
 }
