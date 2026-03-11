@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useTheme } from './hooks/useTheme';
 import ThemePicker from './components/ThemePicker';
 import FloatingParticles from './components/FloatingParticles';
@@ -17,6 +17,10 @@ import { useGamification, WORKOUT_QUOTES } from './hooks/useGamification';
 import GamificationBar from './components/GamificationBar';
 import useAIWorkoutAssignment from './hooks/useAIWorkoutAssignment';
 import AIWorkoutPersonalization from './components/AIWorkoutPersonalization';
+import DayCompleteOverlay from './components/DayCompleteOverlay';
+import ProgressCharts from './components/ProgressCharts';
+import { PTStatusBadge, SendToPTButton } from './components/PTConnect';
+import { useHaptics } from './hooks/useHaptics';
 
 // ── Trial period: AI workout available for first 14 days after signup ──
 const TRIAL_DAYS = 14;
@@ -36,6 +40,11 @@ const App = () => {
   const { profile, loading: profileLoading, saveProfile, needsOnboarding } = useUserProfile(user?.uid);
   const [currentDay, setCurrentDay] = useState(1);
   const [completedExercises, setCompletedExercises] = useState({});
+  const handleDayChange = (day) => {
+    setCurrentDay(day);
+    setCompletedExercises({});
+    dayCompleteShownRef.current = '';
+  };
   const [workoutQuote, setWorkoutQuote] = useState(null);
   const { workouts, saveWorkout, deleteWorkout } = useWorkouts(user?.uid);
   const { getNote, saveNote } = useExerciseNotes(user?.uid);
@@ -45,11 +54,37 @@ const App = () => {
   const [showAIPersonalization, setShowAIPersonalization] = useState(false);
   const [showThemePicker, setShowThemePicker] = useState(false);
   const { setTheme, themes, themeId, currentTheme } = useTheme();
+  const { vibrate } = useHaptics();
+  const [showDayComplete, setShowDayComplete] = useState(false);
+  const dayCompleteShownRef = useRef('');
 
-  const userLevel = profile?.level || 'beginner';
   const currentDayData = exercisesData[currentDay];
+  const userLevel = profile?.level || 'beginner';
   const trialActive = isTrialActive(profile);
   const daysLeft = trialDaysLeft(profile);
+
+  // ── Day completion detection ──
+  useEffect(() => {
+    if (!currentDayData) return;
+    const total = currentDayData.exercises.length;
+    const done = currentDayData.exercises.filter(ex => completedExercises[ex.id]).length;
+    const key = `day-${currentDay}-complete`;
+    if (done === total && total > 0 && dayCompleteShownRef.current !== key) {
+      dayCompleteShownRef.current = key;
+      setTimeout(() => setShowDayComplete(true), 400);
+      vibrate('complete');
+    }
+  }, [completedExercises, currentDay, currentDayData, vibrate]);
+
+  // ── Haptics on badge / level up ──
+  useEffect(() => {
+    if (gamification.newBadge) vibrate('badge');
+  }, [gamification.newBadge]); // eslint-disable-line
+
+  useEffect(() => {
+    if (gamification.levelUp) vibrate('levelUp');
+  }, [gamification.levelUp]); // eslint-disable-line
+
 
   // Show a random motivational quote after exercise completion
   const showRandomQuote = useCallback(() => {
@@ -76,8 +111,10 @@ const App = () => {
         completed: true,
       });
       if (gamification.recordExercise) gamification.recordExercise();
-      // 30% chance to show motivational quote
-      if (Math.random() < 0.3) showRandomQuote();
+      vibrate('success');
+      if (Math.random() < 0.3) {
+        showRandomQuote();
+      }
     }
   };
 
@@ -142,7 +179,10 @@ const App = () => {
               </div>
             )}
             <div>
-              <p className="text-white/80 text-xs font-semibold">{user.displayName || 'Atleta'}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-white/80 text-xs font-semibold">{user.displayName || 'Atleta'}</p>
+                <PTStatusBadge />
+              </div>
               <p className="text-white/25 text-[10px]">
                 {trialActive ? `Prova attiva · ${daysLeft}gg rimasti` : 'Piano attivo'}
               </p>
@@ -233,7 +273,7 @@ const App = () => {
           {Object.entries(exercisesData).map(([dayNum, dayData]) => (
             <button
               key={dayNum}
-              onClick={() => setCurrentDay(parseInt(dayNum))}
+              onClick={() => handleDayChange(parseInt(dayNum))}
               className={`flex-shrink-0 w-14 h-14 font-medium transition-all-smooth active:scale-95 ${
                 currentDay === parseInt(dayNum)
                   ? `${getDayGradient(dayData.color)} text-white`
@@ -281,16 +321,37 @@ const App = () => {
             calc1RM={calc1RM}
             checkAndSavePR={checkAndSavePR}
           />
+
+          {/* Send to PT */}
+          <div className="mt-4">
+            <SendToPTButton
+              userName={user.displayName}
+              dayTitle={day.title}
+              completedExercises={completedExercises}
+              exerciseCount={day.exercises.filter(ex => completedExercises[ex.id]).length}
+            />
+          </div>
         </div>
 
         {/* Progress Section */}
         <div className="h-px bg-white/5 mx-8 mb-8 mt-8"></div>
         <p className="text-white/30 text-xs font-semibold uppercase tracking-widest text-center mb-5">Progressi</p>
-        <ProgressTable workouts={workouts} onDelete={deleteWorkout} />
+        <ProgressCharts workouts={workouts} />
+        <div className="mt-6">
+          <ProgressTable workouts={workouts} onDelete={deleteWorkout} />
+        </div>
       </div>
 
       {/* Bottom safe area */}
       <div className="h-20"></div>
+
+      {/* Day Complete Celebration */}
+      <DayCompleteOverlay
+        show={showDayComplete}
+        dayTitle={day.title.split(':')[0]}
+        exerciseCount={day.exercises.length}
+        onClose={() => setShowDayComplete(false)}
+      />
 
       {/* Theme Picker */}
       {showThemePicker && (
