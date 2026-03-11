@@ -32,13 +32,23 @@ export default function ProgressCharts({ workouts }) {
   const exerciseMap = useMemo(() => {
     const map = {};
     (workouts || []).forEach(w => {
-      if (!w.exerciseName || !w.weight) return;
+      if (!w.exerciseName) return;
+      // Best weight: from sets array (new format) or direct weight (legacy)
+      let bestWeight = parseFloat(w.weight) || 0;
+      let bestReps   = parseFloat(w.reps) || 0;
+      if (w.sets?.length) {
+        w.sets.forEach(s => {
+          const sw = parseFloat(s.weight) || 0;
+          if (sw > bestWeight) { bestWeight = sw; bestReps = parseFloat(s.value) || bestReps; }
+        });
+      }
+      if (!bestWeight && !bestReps) return;
       if (!map[w.exerciseName]) map[w.exerciseName] = [];
       map[w.exerciseName].push({
         date: fmt(w.completedAt || w.createdAt || new Date()),
         rawDate: w.completedAt || w.createdAt || new Date().toISOString(),
-        weight: parseFloat(w.weight) || 0,
-        reps: w.reps,
+        weight: bestWeight,
+        reps: bestReps,
       });
     });
     // Sort each exercise by date

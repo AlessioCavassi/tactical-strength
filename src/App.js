@@ -93,7 +93,7 @@ const App = () => {
     setTimeout(() => setWorkoutQuote(null), 5000);
   }, []);
 
-  const handleExerciseComplete = async (exerciseId, weight, reps) => {
+  const handleExerciseComplete = async (exerciseId, weight, reps, sets) => {
     setCompletedExercises(prev => ({
       ...prev,
       [exerciseId]: { weight, reps, completedAt: new Date().toISOString() }
@@ -105,9 +105,13 @@ const App = () => {
         exerciseId,
         exerciseName: exercise?.name || exerciseId,
         day: currentDay,
-        weight: weight || 0,
-        reps: reps || 0,
+        weight: parseFloat(weight) || 0,
+        reps: parseFloat(reps) || 0,
         setsReps: exercise?.setsReps || '',
+        sets: (sets || []).map(s => ({
+          weight: parseFloat(s.weight) || 0,
+          value: parseFloat(s.value) || 0,
+        })),
         completed: true,
       });
       if (gamification.recordExercise) gamification.recordExercise();
