@@ -48,7 +48,7 @@ const App = () => {
   const [workoutQuote, setWorkoutQuote] = useState(null);
   const { workouts, saveWorkout, deleteWorkout } = useWorkouts(user?.uid);
   const { getNote, saveNote } = useExerciseNotes(user?.uid);
-  const { getLastWorkout, getPR, calc1RM, checkAndSavePR } = useExerciseHistory(user?.uid);
+  const { getLastWorkout, getPR, prs, calc1RM, checkAndSavePR } = useExerciseHistory(user?.uid);
   const gamification = useGamification(user?.uid);
   const aiWorkout = useAIWorkoutAssignment();
   const [showAIPersonalization, setShowAIPersonalization] = useState(false);
@@ -342,7 +342,7 @@ const App = () => {
         <p className="text-white/30 text-xs font-semibold uppercase tracking-widest text-center mb-5">Progressi</p>
         <ProgressCharts workouts={workouts} />
         <div className="mt-6">
-          <ProgressTable workouts={workouts} onDelete={deleteWorkout} />
+          <ProgressTable workouts={workouts} prs={prs} profile={profile} onDelete={deleteWorkout} />
         </div>
       </div>
 

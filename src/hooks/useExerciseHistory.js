@@ -113,6 +113,7 @@ export function useExerciseHistory(userId) {
 
   return {
     allWorkouts,
+    prs,
     loading,
     getLastWorkout,
     getExerciseHistory,

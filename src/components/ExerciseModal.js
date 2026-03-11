@@ -338,13 +338,6 @@ const ExerciseModal = ({
 
               {/* Set rows */}
               <div className="space-y-2">
-                {/* Column headers */}
-                <div className="flex items-center gap-2 px-1">
-                  <span className="w-[46px] text-[9px] text-white/20 font-bold uppercase" />
-                  {fl.a && <span className="flex-1 text-[9px] text-white/20 font-semibold text-center uppercase tracking-wider">{fl.a}</span>}
-                  {fl.b && <span className="flex-1 text-[9px] text-white/20 font-semibold text-center uppercase tracking-wider">{fl.b}</span>}
-                  <span className="w-8" />
-                </div>
 
                 {sets.map((set, i) => {
                   const isDone    = i < activeSet;
@@ -356,10 +349,14 @@ const ExerciseModal = ({
                       isDone   ? 'bg-green-500/5' :
                       'bg-white/2 opacity-40'
                     }`}>
-                      {/* Set label */}
-                      <span className={`w-[46px] text-[10px] font-bold flex-shrink-0 ${isDone ? 'text-green-400/60' : isActive ? 'text-white/60' : 'text-white/20'}`}>
-                        SET {i + 1}
-                      </span>
+                      {/* Set number circle */}
+                      <div className={`w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold border ${
+                        isDone   ? 'bg-green-500/15 border-green-500/30 text-green-400' :
+                        isActive ? 'bg-blue-500/15 border-blue-500/30 text-blue-400' :
+                        'bg-white/5 border-white/10 text-white/20'
+                      }`}>
+                        {i + 1}
+                      </div>
 
                       {/* Weight input */}
                       {fl.a && (
