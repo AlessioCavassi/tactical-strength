@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
 // PT phone number — set REACT_APP_PT_WHATSAPP in .env / Vercel
-const PT_PHONE = process.env.REACT_APP_PT_WHATSAPP || '393331234567';
+const PT_PHONE = process.env.REACT_APP_PT_WHATSAPP || '39345513xxxx';
 
 // PT is "online" between 7:00–22:00 local time on weekdays, 9:00–18:00 weekends
 function isPTOnline() {
