@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 // ── Exercise type detection ──────────────────────────────────────────────────
 // standard   → weight (kg) + reps
@@ -30,25 +31,20 @@ function parseTargetReps(setsReps) {
 }
 
 // ── Constants ────────────────────────────────────────────────────────────────
-const BEGINNER_TIPS = [
-  "💡 Non avere fretta: la tecnica viene prima del peso!",
-  "💡 Se senti dolore, fermati. Fastidio muscolare è ok, dolore articolare no.",
-  "💡 Conta i secondi nella fase eccentrica (scendere): lento è meglio!",
-  "💡 Concentrati sulla connessione mente-muscolo.",
-  "💡 Bevi acqua tra un set e l'altro.",
-  "💡 Meglio un peso leggero con tecnica perfetta che uno pesante fatto male.",
-];
-const DIFFICULTY_MAP = {
-  easy:   { label: 'Facile',    color: 'text-green-400', bg: 'bg-green-500/15' },
-  medium: { label: 'Medio',     color: 'text-yellow-400', bg: 'bg-yellow-500/15' },
-  hard:   { label: 'Difficile', color: 'text-red-400',   bg: 'bg-red-500/15' },
-};
+const getDIFFICULTY_MAP = (t) => ({
+  easy:   { label: t.diffEasy,   color: 'text-green-400', bg: 'bg-green-500/15' },
+  medium: { label: t.diffMedium, color: 'text-yellow-400', bg: 'bg-yellow-500/15' },
+  hard:   { label: t.diffHard,   color: 'text-red-400',   bg: 'bg-red-500/15' },
+});
 
 // ── Component ────────────────────────────────────────────────────────────────
 const ExerciseModal = ({
   exercise, onClose, onComplete, userLevel = 'beginner',
   noteText = '', onSaveNote, lastWorkout, exercisePR, calc1RM, onCheckPR,
 }) => {
+  const { t } = useLanguage();
+  const DIFFICULTY_MAP = getDIFFICULTY_MAP(t);
+  const BEGINNER_TIPS = t.beginnerTips || [];
   const isBeginner     = userLevel === 'beginner';
   const isIntermediate = userLevel === 'intermediate';
   const isAdvanced     = userLevel === 'advanced';
@@ -156,10 +152,10 @@ const ExerciseModal = ({
       <div className="fixed inset-0 bg-black/80 backdrop-blur-2xl flex items-center justify-center z-50">
         <div className="text-center px-8">
           <div className="text-6xl mb-4 animate-bounce">🏆</div>
-          <h2 className="text-2xl font-black text-white mb-2">NUOVO PR!</h2>
+          <h2 className="text-2xl font-black text-white mb-2">{t.newPR}</h2>
           <p className="text-white/60 text-sm mb-1">{exercise.name}</p>
           <p className="text-3xl font-black text-yellow-400">{estimated1RM} kg</p>
-          <p className="text-white/30 text-xs mt-1">1RM stimato</p>
+          <p className="text-white/30 text-xs mt-1">{t.estimated1RM}</p>
         </div>
       </div>
     );
@@ -181,10 +177,10 @@ const ExerciseModal = ({
 
   // ── Label helpers ────────────────────────────────────────────────────────
   const fieldLabels = {
-    standard:   { a: isBeginner ? 'Peso usato (kg)' : 'Peso (kg)', b: isBeginner ? 'Ripetizioni' : 'Reps', aPlaceholder: 'kg', bPlaceholder: targetReps || '—' },
-    bodyweight: { a: null, b: isBeginner ? 'Ripetizioni' : 'Reps', aPlaceholder: null, bPlaceholder: targetReps || '—' },
-    time:       { a: null, b: isBeginner ? 'Tempo (secondi)' : 'Sec', aPlaceholder: null, bPlaceholder: 'sec' },
-    distance:   { a: isBeginner ? 'Peso per mano (kg)' : 'Kg/mano', b: 'Distanza (m)', aPlaceholder: 'kg', bPlaceholder: 'metri' },
+    standard:   { a: isBeginner ? t.weightUsed : t.weightKg, b: isBeginner ? t.repetitions : 'Reps', aPlaceholder: 'kg', bPlaceholder: targetReps || '—' },
+    bodyweight: { a: null, b: isBeginner ? t.repetitions : 'Reps', aPlaceholder: null, bPlaceholder: targetReps || '—' },
+    time:       { a: null, b: isBeginner ? t.timeSec : 'Sec', aPlaceholder: null, bPlaceholder: 'sec' },
+    distance:   { a: isBeginner ? t.weightPerHand : 'Kg', b: t.distanceM, aPlaceholder: 'kg', bPlaceholder: t.meters },
     cardio:     { a: null, b: null, aPlaceholder: null, bPlaceholder: null },
     class:      { a: null, b: null, aPlaceholder: null, bPlaceholder: null },
   };
@@ -206,7 +202,7 @@ const ExerciseModal = ({
                 <span className="text-blue-400 font-medium text-xs">{exercise.setsReps}</span>
                 {exercise.recovery > 0 && <span className="text-white/25 text-[10px]">⏱{exercise.recovery}s</span>}
                 <span className={`${diff.bg} ${diff.color} text-[9px] font-bold px-1.5 py-0.5 rounded-md uppercase`}>{diff.label}</span>
-                {!isSimple && <span className="text-white/15 text-[10px]">{activeSet}/{setsCount} serie</span>}
+                {!isSimple && <span className="text-white/15 text-[10px]">{activeSet}/{setsCount} {t.sets}</span>}
               </div>
             </div>
             <button onClick={onClose} className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-white/40 active:scale-90 transition-transform">
@@ -240,7 +236,7 @@ const ExerciseModal = ({
                 <div className="glass-light rounded-xl p-3 flex items-center gap-2">
                   <span className="text-lg">⚖️</span>
                   <div>
-                    <p className="text-white/40 text-[9px] font-semibold uppercase tracking-wider">Peso suggerito</p>
+                    <p className="text-white/40 text-[9px] font-semibold uppercase tracking-wider">{t.suggestedWeight}</p>
                     <p className="text-white/80 text-xs font-bold">{exercise.suggestedWeight}</p>
                   </div>
                 </div>
@@ -252,7 +248,7 @@ const ExerciseModal = ({
                   <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><rect x="2" y="2" width="20" height="20" rx="5" fill="none" stroke="white" strokeWidth="2"/><circle cx="12" cy="12" r="5" fill="none" stroke="white" strokeWidth="2"/><circle cx="17.5" cy="6.5" r="1.5"/></svg>
                   </div>
-                  <div className="flex-1"><p className="text-white font-bold text-sm">▶ Guarda l'esecuzione corretta</p><p className="text-white/70 text-[11px] mt-0.5">Instagram Reel dal tuo PT</p></div>
+                  <div className="flex-1"><p className="text-white font-bold text-sm">{t.watchExecution}</p><p className="text-white/70 text-[11px] mt-0.5">{t.instagramReel}</p></div>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" className="opacity-70"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
                 </a>
               )}
@@ -264,7 +260,7 @@ const ExerciseModal = ({
             <>
               {lastWorkout && (
                 <div className="glass-light rounded-xl p-3 flex items-center justify-between">
-                  <div><p className="text-white/30 text-[9px] font-semibold uppercase tracking-wider">Ultima volta</p>
+                  <div><p className="text-white/30 text-[9px] font-semibold uppercase tracking-wider">{t.lastTime}</p>
                     <p className="text-white/70 text-sm font-bold">{lastWorkout.weight} kg × {lastWorkout.reps} reps</p></div>
                   {exercisePR && <div className="text-right"><p className="text-white/30 text-[9px] font-semibold uppercase tracking-wider">PR</p>
                     <p className="text-yellow-400/80 text-sm font-bold">{exercisePR.estimated1RM} kg</p></div>}
@@ -277,7 +273,7 @@ const ExerciseModal = ({
                   <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><rect x="2" y="2" width="20" height="20" rx="5" fill="none" stroke="white" strokeWidth="2"/><circle cx="12" cy="12" r="5" fill="none" stroke="white" strokeWidth="2"/><circle cx="17.5" cy="6.5" r="1.5"/></svg>
                   </div>
-                  <div className="flex-1"><p className="text-white font-bold text-xs">▶ Esecuzione corretta</p></div>
+                  <div className="flex-1"><p className="text-white font-bold text-xs">{t.correctExecution}</p></div>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" className="opacity-70"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
                 </a>
               )}
@@ -287,7 +283,7 @@ const ExerciseModal = ({
           {/* ADVANCED compact stats */}
           {isAdvanced && (
             <div className="flex gap-2">
-              {lastWorkout && <div className="glass-light rounded-xl p-2.5 flex-1 text-center"><p className="text-white/20 text-[8px] font-bold uppercase">Precedente</p><p className="text-white/60 text-xs font-bold">{lastWorkout.weight}×{lastWorkout.reps}</p></div>}
+              {lastWorkout && <div className="glass-light rounded-xl p-2.5 flex-1 text-center"><p className="text-white/20 text-[8px] font-bold uppercase">{t.previous}</p><p className="text-white/60 text-xs font-bold">{lastWorkout.weight}×{lastWorkout.reps}</p></div>}
               {exercisePR && <div className="glass-light rounded-xl p-2.5 flex-1 text-center"><p className="text-white/20 text-[8px] font-bold uppercase">PR 1RM</p><p className="text-yellow-400/70 text-xs font-bold">{exercisePR.estimated1RM}kg</p></div>}
               {exercise.instagramUrl && (
                 <a href={exercise.instagramUrl} target="_blank" rel="noopener noreferrer"
@@ -301,17 +297,17 @@ const ExerciseModal = ({
           )}
 
           {/* Instruction sections */}
-          <SectionCard id="setup"     title={isBeginner ? "📋 Come posizionarti" : "Setup"}          content={exercise.setup} />
-          <SectionCard id="execution" title={isBeginner ? "🎯 Come eseguirlo"    : "Esecuzione"}     content={exercise.execution} />
-          <SectionCard id="breathing" title={isBeginner ? "🫁 Respirazione"      : "Respirazione"}   content={exercise.breathing} />
-          <SectionCard id="error"     title={isBeginner ? "⚠️ Errore comune"     : "Errore"} content={exercise.error} borderColor="border-red-500/10" />
+          <SectionCard id="setup"     title={isBeginner ? t.secSetupBeg : t.secSetup}       content={exercise.setup} />
+          <SectionCard id="execution" title={isBeginner ? t.secExecBeg : t.secExec}         content={exercise.execution} />
+          <SectionCard id="breathing" title={isBeginner ? t.secBreathBeg : t.secBreath}     content={exercise.breathing} />
+          <SectionCard id="error"     title={isBeginner ? t.secErrorBeg : t.secError} content={exercise.error} borderColor="border-red-500/10" />
 
           {/* ── CLASS / CARDIO: single complete button ───────────────────── */}
           {isSimple && (
             <button onClick={handleSimpleComplete}
               className="w-full gradient-green text-white py-3.5 px-6 rounded-2xl font-semibold text-sm shadow-premium-sm active:scale-[0.97] transition-all-smooth flex items-center justify-center gap-2">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-              {isBeginner ? 'Completato! 💪' : 'Completato'}
+              {isBeginner ? t.completedBeg : t.completed}
             </button>
           )}
 
@@ -330,7 +326,7 @@ const ExerciseModal = ({
                   ) : (
                     <span className="flex items-center justify-center gap-2">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                      Recupero · {exercise.recovery}s
+                      {t.recovery} · {exercise.recovery}s
                     </span>
                   )}
                 </button>
@@ -412,23 +408,23 @@ const ExerciseModal = ({
               {!allSetsDone && activeSet > 0 && activeSet < setsCount && (
                 <button onClick={copyToAll} className="text-blue-400/50 text-[10px] flex items-center gap-1 hover:text-blue-400/70 transition-colors mx-auto">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                  Copia valori ai set restanti
+                  {t.copyToRemaining}
                 </button>
               )}
 
               {/* Overload indicator */}
               {!isBeginner && overloadStatus && (
                 <div className={`text-center text-[11px] font-semibold ${overloadStatus === 'up' ? 'text-green-400' : overloadStatus === 'down' ? 'text-red-400' : 'text-white/30'}`}>
-                  {overloadStatus === 'up' && '↑ Volume superiore alla scorsa volta!'}
-                  {overloadStatus === 'down' && '↓ Volume inferiore alla scorsa volta'}
-                  {overloadStatus === 'same' && '= Stesso volume della scorsa volta'}
+                  {overloadStatus === 'up' && t.overloadUp}
+                  {overloadStatus === 'down' && t.overloadDown}
+                  {overloadStatus === 'same' && t.overloadSame}
                 </div>
               )}
 
               {/* 1RM estimate */}
               {!isBeginner && estimated1RM > 0 && (
                 <div className="text-center">
-                  <span className="text-white/20 text-[9px] uppercase tracking-wider font-semibold">1RM stimato: </span>
+                  <span className="text-white/20 text-[9px] uppercase tracking-wider font-semibold">{t.estimated1RM}: </span>
                   <span className="text-white/50 text-xs font-bold">{estimated1RM} kg</span>
                 </div>
               )}
@@ -436,9 +432,9 @@ const ExerciseModal = ({
               {/* RPE — simplified for beginner/intermediate, full scale for advanced */}
               {allSetsDone && !isAdvanced && (
                 <div className="glass-light rounded-2xl p-3.5">
-                  <p className="text-white/30 text-[9px] font-semibold uppercase tracking-wider mb-2.5 text-center">Come ti sei sentito?</p>
+                  <p className="text-white/30 text-[9px] font-semibold uppercase tracking-wider mb-2.5 text-center">{t.howDidYouFeel}</p>
                   <div className="flex gap-2">
-                    {[{v:5,e:'😊',l:'Facile'},{v:7,e:'💪',l:'Nella zona'},{v:9,e:'🔥',l:'Al massimo'}].map(({v,e,l}) => (
+                    {[{v:5,e:'😊',l:t.rpeEasy},{v:7,e:'💪',l:t.rpeZone},{v:9,e:'🔥',l:t.rpeMax}].map(({v,e,l}) => (
                       <button key={v} onClick={() => setRpe(rpe === v ? 0 : v)}
                         className={`flex-1 py-2.5 rounded-xl flex flex-col items-center gap-1 transition-all active:scale-95 ${
                           rpe === v ? 'bg-blue-500/20 ring-1 ring-blue-500/40 text-white' : 'glass text-white/40'
@@ -467,15 +463,15 @@ const ExerciseModal = ({
                 <div>
                   {showNote || note ? (
                     <div>
-                      <label className="block text-white/30 text-[10px] font-medium mb-1 pl-1">{isBeginner ? '📝 I tuoi appunti' : 'Note'}</label>
+                      <label className="block text-white/30 text-[10px] font-medium mb-1 pl-1">{isBeginner ? t.yourNotes : t.notes}</label>
                       <textarea value={note} onChange={e => setNote(e.target.value)} rows={2}
-                        placeholder={isBeginner ? "Es: La prossima volta provo con 12kg..." : "Note..."}
+                        placeholder={isBeginner ? t.notePlaceholderBeg : t.notePlaceholder}
                         className="w-full px-3 py-2 glass-light rounded-xl text-white text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all-smooth placeholder-white/15 resize-none" />
                     </div>
                   ) : (
                     <button onClick={() => setShowNote(true)} className="text-white/20 text-[10px] flex items-center gap-1 hover:text-white/40 transition-colors">
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-                      {noteText ? 'Modifica nota' : 'Aggiungi nota'}
+                      {noteText ? t.editNote : t.addNote}
                     </button>
                   )}
                 </div>
@@ -486,13 +482,13 @@ const ExerciseModal = ({
                 <button onClick={handleComplete}
                   className="w-full gradient-green text-white py-3.5 px-6 rounded-2xl font-semibold text-sm shadow-premium-sm active:scale-[0.97] transition-all-smooth flex items-center justify-center gap-2">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  {isBeginner ? 'Esercizio completato! 💪' : 'Completa esercizio'}
+                  {isBeginner ? t.exerciseCompletedBeg : t.completeExercise}
                 </button>
               ) : (
                 <div className="glass-light rounded-2xl p-3 text-center">
                   <p className="text-white/25 text-[11px]">
-                    Completa tutte le {setsCount} serie per finire l'esercizio
-                    <span className="text-blue-400/50 ml-1">({activeSet}/{setsCount} fatto)</span>
+                    {t.completeAllSets.replace('{n}', setsCount)}
+                    <span className="text-blue-400/50 ml-1">({activeSet}/{setsCount} {t.done})</span>
                   </p>
                 </div>
               )}

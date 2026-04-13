@@ -1,8 +1,10 @@
 import React from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useLanguage } from '../i18n/LanguageContext';
 
 export default function LoginScreen() {
   const { loginWithGoogle, loading } = useAuth();
+  const { t } = useLanguage();
 
   if (loading) {
     return (
@@ -52,7 +54,7 @@ export default function LoginScreen() {
           <h1 className="text-3xl font-black tracking-tight mb-3">
             <span className="login-shimmer">STRENGTH</span>
           </h1>
-          <p className="text-white/40 text-sm">La tua scheda di allenamento digitale</p>
+          <p className="text-white/40 text-sm">{t.loginScreenSubtitle}</p>
         </div>
 
         {/* Login button */}
@@ -67,12 +69,12 @@ export default function LoginScreen() {
               <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
               <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
             </svg>
-            <span className="text-white font-semibold text-sm">Accedi con Google</span>
+            <span className="text-white font-semibold text-sm">{t.signInWithGoogle}</span>
           </button>
         </div>
 
         <div className="login-fade mt-6" style={{ animationDelay: '0.5s', opacity: 0 }}>
-          <p className="text-white/20 text-[10px]">I tuoi dati sono salvati in modo sicuro su Google Cloud</p>
+          <p className="text-white/20 text-[10px]">{t.loginScreenSecure}</p>
         </div>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useLanguage } from '../i18n/LanguageContext';
 
 // PT phone number — set REACT_APP_PT_WHATSAPP in .env / Vercel
 const PT_PHONE = process.env.REACT_APP_PT_WHATSAPP || '39345513xxxx';
@@ -13,18 +14,19 @@ function isPTOnline() {
   return isWeekend ? h >= 9 && h < 18 : h >= 7 && h < 22;
 }
 
-function buildWhatsAppText(userName, dayTitle, completedExercises) {
-  const lines = [`✅ *Sessione completata* — ${dayTitle}`, `👤 ${userName || 'Atleta'}`, ``];
+function buildWhatsAppText(userName, dayTitle, completedExercises, t) {
+  const lines = [`✅ *${t.waSessionCompleted}* — ${dayTitle}`, `👤 ${userName || t.athlete}`, ``];
   Object.entries(completedExercises).forEach(([id, data]) => {
     if (data.weight || data.reps) {
       lines.push(`• ${id}: ${data.weight ? data.weight + ' kg' : ''}${data.reps ? ' × ' + data.reps + ' reps' : ''}`);
     }
   });
-  lines.push(``, `_Inviato da Tactical Strength App_`);
+  lines.push(``, `_${t.waSentFrom}_`);
   return encodeURIComponent(lines.join('\n'));
 }
 
 export function PTStatusBadge() {
+  const { t } = useLanguage();
   const [online, setOnline] = useState(isPTOnline());
 
   useEffect(() => {
@@ -43,18 +45,19 @@ export function PTStatusBadge() {
       />
       <span className="text-[9px] font-semibold"
         style={{ color: online ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.2)' }}>
-        PT {online ? 'Online' : 'Offline'}
+        PT {online ? t.ptOnline : t.ptOffline}
       </span>
     </div>
   );
 }
 
 export function SendToPTButton({ userName, dayTitle, completedExercises, exerciseCount }) {
+  const { t } = useLanguage();
   const [sent, setSent] = useState(false);
   const hasData = Object.keys(completedExercises).length > 0;
 
   const handleSend = () => {
-    const text = buildWhatsAppText(userName, dayTitle, completedExercises);
+    const text = buildWhatsAppText(userName, dayTitle, completedExercises, t);
     window.open(`https://wa.me/${PT_PHONE}?text=${text}`, '_blank');
     setSent(true);
     setTimeout(() => setSent(false), 5000);
@@ -79,15 +82,15 @@ export function SendToPTButton({ userName, dayTitle, completedExercises, exercis
       {sent ? (
         <>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#30d158" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-          Inviato al PT
+          {t.sentToPT}
         </>
       ) : (
         <>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
           </svg>
-          Invia sessione al PT
-          <span className="text-[10px] opacity-50 font-normal">({exerciseCount} esercizi)</span>
+          {t.sendToPT}
+          <span className="text-[10px] opacity-50 font-normal">({exerciseCount} {t.exercises})</span>
         </>
       )}
     </motion.button>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const CACHE_KEY  = 'ai_insights_cache';
 const CACHE_TTL  = 24 * 60 * 60 * 1000; // refresh once per day
@@ -22,12 +23,12 @@ function saveCache(userId, insights) {
   } catch {}
 }
 
-function buildPrompt(profile, workouts, prs, gamStats) {
+function buildPrompt(profile, workouts, prs, gamStats, lang) {
   const goal        = profile?.goals?.[0] || 'salute';
   const level       = profile?.level || 'beginner';
   const age         = profile?.ageRange || '?';
-  const weight      = profile?.bodyWeight ? `${profile.bodyWeight} kg` : 'non specificato';
-  const freq        = profile?.weeklyFrequency ? `${profile.weeklyFrequency} giorni/sett.` : '?';
+  const weight      = profile?.bodyWeight ? `${profile.bodyWeight} kg` : (lang === 'en' ? 'not specified' : 'non specificato');
+  const freq        = profile?.weeklyFrequency ? `${profile.weeklyFrequency} ${lang === 'en' ? 'days/week' : 'giorni/sett.'}` : '?';
   const duration    = profile?.sessionDuration ? `${profile.sessionDuration} min` : '?';
   const streak      = gamStats?.currentStreak || 0;
   const totalEx     = gamStats?.totalExercises || 0;
@@ -39,31 +40,46 @@ function buildPrompt(profile, workouts, prs, gamStats) {
     .map(w => `${w.exerciseName}: ${w.weight > 0 ? w.weight + 'kg' : ''} ${w.reps > 0 ? '×' + w.reps : ''}`.trim())
     .join(', ');
 
-  return `Sei un personal trainer esperto. Analizza questi dati di allenamento e genera ESATTAMENTE 3 suggerimenti personalizzati in italiano, concisi e motivanti.
+  const langInstr = lang === 'en'
+    ? 'You are an expert personal trainer. Analyze the training data and generate EXACTLY 3 personalized suggestions in English, concise and motivating.'
+    : 'Sei un personal trainer esperto. Analizza questi dati di allenamento e genera ESATTAMENTE 3 suggerimenti personalizzati in italiano, concisi e motivanti.';
 
-DATI ATLETA:
-- Obiettivo: ${goal}
-- Livello: ${level}
-- Età: ${age}
-- Peso: ${weight}
-- Frequenza target: ${freq}
-- Durata sessione: ${duration}
-- Streak attuale: ${streak} giorni
-- Totale esercizi completati: ${totalEx}
-- Record personali: ${prCount} (totalPRs: ${totalPRs})
-- Ultimi esercizi: ${recentEx || 'nessuno ancora'}
-
-REGOLE:
+  const rulesInstr = lang === 'en'
+    ? `RULES:
+- Reply ONLY with a JSON array of exactly 3 objects, nothing else
+- Each object has: "icon" (1 emoji), "title" (max 5 words), "text" (max 20 words, concrete and actionable)
+- Tone: direct, motivating, specific to the data
+- If not enough data, give general advice for the stated goal`
+    : `REGOLE:
 - Rispondi SOLO con un JSON array di esattamente 3 oggetti, niente altro
 - Ogni oggetto ha: "icon" (1 emoji), "title" (max 5 parole), "text" (max 20 parole, concreto e actionable)
 - Tono: diretto, motivante, specifico ai dati
-- Se non ci sono abbastanza dati, dai consigli generali per l'obiettivo indicato
+- Se non ci sono abbastanza dati, dai consigli generali per l'obiettivo indicato`;
 
-Esempio formato:
-[{"icon":"🔥","title":"Mantieni lo streak","text":"Sei a ${streak} giorni consecutivi. Domani non saltare per consolidare l'abitudine."},{"icon":"💪","title":"Aumenta il carico","text":"Dopo 3 sessioni sullo stesso peso, è ora di salire di 2.5 kg."},{"icon":"📊","title":"Traccia le reps","text":"Inserire le ripetizioni ti aiuta a vedere il progresso settimana per settimana."}]`;
+  const noData = recentEx || (lang === 'en' ? 'none yet' : 'nessuno ancora');
+
+  return `${langInstr}
+
+ATHLETE DATA:
+- Goal: ${goal}
+- Level: ${level}
+- Age: ${age}
+- Weight: ${weight}
+- Target frequency: ${freq}
+- Session duration: ${duration}
+- Current streak: ${streak} days
+- Total exercises completed: ${totalEx}
+- Personal records: ${prCount} (totalPRs: ${totalPRs})
+- Recent exercises: ${noData}
+
+${rulesInstr}
+
+Example format:
+[{"icon":"🔥","title":"Keep the streak","text":"You're at ${streak} consecutive days. Don't skip tomorrow to build the habit."},{"icon":"💪","title":"Increase load","text":"After 3 sessions at the same weight, it's time to go up 2.5 kg."},{"icon":"📊","title":"Track reps","text":"Logging reps helps you see progress week over week."}]`;
 }
 
 export default function AIInsightCard({ profile, workouts, prs, gamStats }) {
+  const { t, lang } = useLanguage();
   const [insights, setInsights]   = useState(null);
   const [loading, setLoading]     = useState(false);
   const [error, setError]         = useState(null);
@@ -78,14 +94,14 @@ export default function AIInsightCard({ profile, workouts, prs, gamStats }) {
     }
 
     const apiKey = process.env.REACT_APP_GEMINI_API_KEY;
-    if (!apiKey) { setError('API key mancante'); return; }
+    if (!apiKey) { setError(t.aiKeyMissing); return; }
 
     setLoading(true);
     setError(null);
     try {
       const genAI  = new GoogleGenerativeAI(apiKey);
       const model  = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-      const prompt = buildPrompt(profile, workouts || [], prs || {}, gamStats);
+      const prompt = buildPrompt(profile, workouts || [], prs || {}, gamStats, lang);
       const result = await model.generateContent(prompt);
       const text   = result.response.text().trim();
 
@@ -98,7 +114,7 @@ export default function AIInsightCard({ profile, workouts, prs, gamStats }) {
       saveCache(userId, parsed);
       setInsights(parsed);
     } catch (err) {
-      setError('Riprova più tardi');
+      setError(t.aiRetryLater);
       console.error('AI Insights error:', err);
     } finally {
       setLoading(false);
@@ -130,8 +146,8 @@ export default function AIInsightCard({ profile, workouts, prs, gamStats }) {
           </svg>
         </div>
         <div className="flex-1 text-left">
-          <p className="text-white/70 text-xs font-bold">Suggerimenti AI</p>
-          <p className="text-white/25 text-[9px]">Analisi personalizzata del tuo allenamento</p>
+          <p className="text-white/70 text-xs font-bold">{t.aiSuggestions}</p>
+          <p className="text-white/25 text-[9px]">{t.aiAnalysis}</p>
         </div>
         <div className="flex items-center gap-2">
           {loading && (
@@ -166,7 +182,7 @@ export default function AIInsightCard({ profile, workouts, prs, gamStats }) {
                         style={{ animationDelay: `${i * 0.15}s` }} />
                     ))}
                   </div>
-                  <p className="text-white/25 text-xs">Analisi in corso…</p>
+                  <p className="text-white/25 text-xs">{t.aiAnalyzing}</p>
                 </div>
               )}
 
@@ -175,7 +191,7 @@ export default function AIInsightCard({ profile, workouts, prs, gamStats }) {
                   <p className="text-white/30 text-xs">{error}</p>
                   <button onClick={() => generate(true)}
                     className="text-violet-400/60 text-xs font-semibold hover:text-violet-400 transition-colors">
-                    Riprova
+                    {t.retry}
                   </button>
                 </div>
               )}
@@ -198,13 +214,13 @@ export default function AIInsightCard({ profile, workouts, prs, gamStats }) {
 
               {insights && !loading && (
                 <div className="flex items-center justify-between pt-1">
-                  <p className="text-white/15 text-[9px]">Aggiornato ogni 24h</p>
+                  <p className="text-white/15 text-[9px]">{t.aiUpdatedEvery}</p>
                   <button onClick={() => generate(true)}
                     className="text-white/15 text-[9px] font-semibold hover:text-white/30 transition-colors flex items-center gap-1">
                     <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                       <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10"/><path d="M20.49 15a9 9 0 01-14.85 3.36L1 14"/>
                     </svg>
-                    Aggiorna
+                    {t.aiRefresh}
                   </button>
                 </div>
               )}

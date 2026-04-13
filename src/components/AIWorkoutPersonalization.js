@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaRobot, FaDumbbell, FaClock, FaCalendarAlt, FaBullseye, FaExclamationTriangle, FaChevronDown, FaChevronUp, FaTimes, FaShieldAlt } from 'react-icons/fa';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const AIWorkoutPersonalization = ({ userProfile, onWorkoutGenerated, onClose, isLoading, error, rateLimitInfo }) => {
+  const { t, lang } = useLanguage();
   const [formData, setFormData] = useState({
     goals: userProfile?.goals || [],
     injuries: userProfile?.injuries || [],
@@ -13,17 +15,17 @@ const AIWorkoutPersonalization = ({ userProfile, onWorkoutGenerated, onClose, is
   
   const [expandedSection, setExpandedSection] = useState('goals');
 
-  const goalOptions = [
+  const goalOptions = t.aiGoalOptions || [
     'Forza', 'Ipertrofia', 'Dimagrimento', 'Resistenza', 
     'Performance Atletica', 'Fitness Funzionale', 'Riabilitazione'
   ];
 
-  const injuryOptions = [
+  const injuryOptions = t.aiInjuryOptions || [
     'Spalle', 'Lombare', 'Ginocchia', 'Collo',
     'Polsi', 'Caviglie', 'Anche', 'Nessuno'
   ];
 
-  const dayOptions = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
+  const dayOptions = t.aiDayOptions || ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
 
   const durationOptions = [30, 45, 60, 75, 90];
 
@@ -37,7 +39,7 @@ const AIWorkoutPersonalization = ({ userProfile, onWorkoutGenerated, onClose, is
   };
 
   const handleInjuryToggle = (injury) => {
-    if (injury === 'Nessuno') {
+    if (injury === (t.aiInjuryOptions?.[7] || 'Nessuno')) {
       setFormData(prev => ({ ...prev, injuries: [] }));
     } else {
       setFormData(prev => ({
@@ -91,7 +93,7 @@ const AIWorkoutPersonalization = ({ userProfile, onWorkoutGenerated, onClose, is
               </div>
               <div>
                 <h2 className="text-lg font-bold text-white">AI Workout</h2>
-                <p className="text-white/40 text-[11px]">Piano personalizzato con AI</p>
+                <p className="text-white/40 text-[11px]">{t.aiPersonalizedPlan}</p>
               </div>
             </div>
             <button
@@ -107,9 +109,9 @@ const AIWorkoutPersonalization = ({ userProfile, onWorkoutGenerated, onClose, is
             <FaShieldAlt className="text-green-400 text-sm flex-shrink-0" />
             <div className="text-[10px] text-white/50">
               {rateLimited ? (
-                <span className="text-orange-400">{rateLimitInfo.reason}</span>
+                <span className="text-orange-400">{lang === 'en' ? (rateLimitInfo.reasonEN || rateLimitInfo.reason) : (rateLimitInfo.reasonIT || rateLimitInfo.reason)}</span>
               ) : (
-                <span>Free tier — {rateLimitInfo?.remainingHourly ?? '?'} richieste/ora · {rateLimitInfo?.remainingDaily ?? '?'} richieste/giorno</span>
+                <span>Free tier — {rateLimitInfo?.remainingHourly ?? '?'} {t.aiReqHour} · {rateLimitInfo?.remainingDaily ?? '?'} {t.aiReqDay}</span>
               )}
             </div>
           </div>
@@ -131,7 +133,7 @@ const AIWorkoutPersonalization = ({ userProfile, onWorkoutGenerated, onClose, is
               >
                 <div className="flex items-center gap-2">
                   <FaBullseye className="text-purple-400 text-sm" />
-                  <span className="font-semibold text-white/80 text-sm">Obiettivi</span>
+                  <span className="font-semibold text-white/80 text-sm">{t.aiGoals}</span>
                   <span className="text-[10px] text-white/30">({formData.goals.length})</span>
                 </div>
                 {expandedSection === 'goals' ? <FaChevronUp className="text-white/30 text-xs" /> : <FaChevronDown className="text-white/30 text-xs" />}
@@ -168,7 +170,7 @@ const AIWorkoutPersonalization = ({ userProfile, onWorkoutGenerated, onClose, is
               >
                 <div className="flex items-center gap-2">
                   <FaExclamationTriangle className="text-orange-400 text-sm" />
-                  <span className="font-semibold text-white/80 text-sm">Infortuni</span>
+                  <span className="font-semibold text-white/80 text-sm">{t.aiInjuries}</span>
                   <span className="text-[10px] text-white/30">({formData.injuries.length})</span>
                 </div>
                 {expandedSection === 'injuries' ? <FaChevronUp className="text-white/30 text-xs" /> : <FaChevronDown className="text-white/30 text-xs" />}
@@ -200,7 +202,7 @@ const AIWorkoutPersonalization = ({ userProfile, onWorkoutGenerated, onClose, is
             <div className="rounded-2xl glass-light p-4">
               <label className="flex items-center gap-2 text-sm font-semibold text-white/80 mb-3">
                 <FaDumbbell className="text-blue-400 text-sm" />
-                Esperienza
+                {t.aiExperience}
               </label>
               <select
                 value={formData.experience}
@@ -208,11 +210,11 @@ const AIWorkoutPersonalization = ({ userProfile, onWorkoutGenerated, onClose, is
                 className="w-full p-3 rounded-xl bg-white/5 border border-white/10 text-white/80 text-sm focus:outline-none focus:border-purple-500/50"
                 required
               >
-                <option value="" className="bg-gray-900">Seleziona esperienza</option>
-                <option value="Principiante (0-6 mesi)" className="bg-gray-900">Principiante (0-6 mesi)</option>
-                <option value="Intermedio (6-18 mesi)" className="bg-gray-900">Intermedio (6-18 mesi)</option>
-                <option value="Avanzato (18+ mesi)" className="bg-gray-900">Avanzato (18+ mesi)</option>
-                <option value="Esperto (3+ anni)" className="bg-gray-900">Esperto (3+ anni)</option>
+                <option value="" className="bg-gray-900">{t.aiSelectExp}</option>
+                <option value="Principiante (0-6 mesi)" className="bg-gray-900">{t.aiExpBeg}</option>
+                <option value="Intermedio (6-18 mesi)" className="bg-gray-900">{t.aiExpInt}</option>
+                <option value="Avanzato (18+ mesi)" className="bg-gray-900">{t.aiExpAdv}</option>
+                <option value="Esperto (3+ anni)" className="bg-gray-900">{t.aiExpExpert}</option>
               </select>
             </div>
 
@@ -220,7 +222,7 @@ const AIWorkoutPersonalization = ({ userProfile, onWorkoutGenerated, onClose, is
             <div className="rounded-2xl glass-light p-4">
               <label className="flex items-center gap-2 text-sm font-semibold text-white/80 mb-3">
                 <FaCalendarAlt className="text-green-400 text-sm" />
-                Giorni di allenamento
+                {t.aiTrainingDays}
               </label>
               <div className="grid grid-cols-7 gap-1.5">
                 {dayOptions.map(day => (
@@ -244,7 +246,7 @@ const AIWorkoutPersonalization = ({ userProfile, onWorkoutGenerated, onClose, is
             <div className="rounded-2xl glass-light p-4">
               <label className="flex items-center gap-2 text-sm font-semibold text-white/80 mb-3">
                 <FaClock className="text-indigo-400 text-sm" />
-                Durata sessione
+                {t.aiSessionDuration}
               </label>
               <div className="flex gap-2">
                 {durationOptions.map(duration => (
@@ -273,14 +275,14 @@ const AIWorkoutPersonalization = ({ userProfile, onWorkoutGenerated, onClose, is
               {isLoading ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div>
-                  <span className="text-sm">AI sta creando il piano...</span>
+                  <span className="text-sm">{t.aiCreatingPlan}</span>
                 </>
               ) : rateLimited ? (
-                <span className="text-sm">Limite raggiunto</span>
+                <span className="text-sm">{t.aiLimitReached}</span>
               ) : (
                 <>
                   <FaRobot />
-                  <span className="text-sm">Genera Piano AI</span>
+                  <span className="text-sm">{t.aiGeneratePlan}</span>
                 </>
               )}
             </button>

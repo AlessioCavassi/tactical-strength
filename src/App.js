@@ -13,8 +13,9 @@ import { useWorkouts } from './hooks/useWorkouts';
 import { useUserProfile } from './hooks/useUserProfile';
 import { useExerciseNotes } from './hooks/useExerciseNotes';
 import { useExerciseHistory } from './hooks/useExerciseHistory';
-import { useGamification, WORKOUT_QUOTES } from './hooks/useGamification';
+import { useGamification, getWORKOUT_QUOTES } from './hooks/useGamification';
 import GamificationBar from './components/GamificationBar';
+import { useLanguage } from './i18n/LanguageContext';
 import useAIWorkoutAssignment from './hooks/useAIWorkoutAssignment';
 import AIWorkoutPersonalization from './components/AIWorkoutPersonalization';
 import DayCompleteOverlay from './components/DayCompleteOverlay';
@@ -37,8 +38,9 @@ const trialDaysLeft = (profile) => {
 };
 
 const App = () => {
+  const { t, lang, toggleLang } = useLanguage();
   const { user, loading, logout, loginWithGoogle } = useAuth();
-  const { profile, loading: profileLoading, saveProfile, needsOnboarding } = useUserProfile(user?.uid);
+  const { profile, loading: profileLoading, error: profileError, saveProfile, needsOnboarding } = useUserProfile(user?.uid);
   const [currentDay, setCurrentDay] = useState(1);
   const [completedExercises, setCompletedExercises] = useState({});
   const handleDayChange = (day) => {
@@ -88,11 +90,12 @@ const App = () => {
 
 
   // Show a random motivational quote after exercise completion
+  const localizedQuotes = getWORKOUT_QUOTES(t);
   const showRandomQuote = useCallback(() => {
-    const q = WORKOUT_QUOTES[Math.floor(Math.random() * WORKOUT_QUOTES.length)];
+    const q = localizedQuotes[Math.floor(Math.random() * localizedQuotes.length)];
     setWorkoutQuote(q);
     setTimeout(() => setWorkoutQuote(null), 5000);
-  }, []);
+  }, [localizedQuotes]);
 
   const handleExerciseComplete = async (exerciseId, weight, reps, sets, rpe) => {
     setCompletedExercises(prev => ({
@@ -150,6 +153,31 @@ const App = () => {
     return <HeroFuturistic isLanding onLogin={loginWithGoogle} loginLoading={loading} />;
   }
 
+  // ── Firestore error (e.g. expired rules) ──
+  if (profileError) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center px-6">
+        <div className="text-center max-w-sm">
+          <div className="text-4xl mb-4">⚠️</div>
+          <h2 className="text-white text-lg font-bold mb-2">{t.connectionError}</h2>
+          <p className="text-white/60 text-sm mb-6">{profileError}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="glass rounded-xl py-3 px-6 text-white text-sm font-semibold mr-3"
+          >
+            {t.retry}
+          </button>
+          <button
+            onClick={logout}
+            className="rounded-xl py-3 px-6 text-white/40 text-sm"
+          >
+            {t.exit}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // ── Onboarding ──
   if (needsOnboarding) {
     return (
@@ -187,21 +215,45 @@ const App = () => {
             )}
             <div>
               <div className="flex items-center gap-2">
-                <p className="text-white/80 text-xs font-semibold">{user.displayName || 'Atleta'}</p>
+                <p className="text-white/80 text-xs font-semibold">{user.displayName || t.athlete}</p>
                 <PTStatusBadge />
               </div>
               <p className="text-white/25 text-[10px]">
-                {trialActive ? `Prova attiva · ${daysLeft}gg rimasti` : 'Piano attivo'}
+                {trialActive ? `${t.trialActive} · ${daysLeft}${t.daysLeft}` : t.planActive}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {/* Language toggle */}
+            <button
+              onClick={toggleLang}
+              className="flex items-center gap-0 rounded-full active:scale-95 transition-all"
+              style={{
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                padding: '3px',
+              }}
+              title={t.language}
+            >
+              <span className="flex items-center justify-center rounded-full text-[11px] transition-all"
+                style={{
+                  width: 26, height: 26,
+                  background: lang === 'it' ? 'rgba(255,255,255,0.15)' : 'transparent',
+                  boxShadow: lang === 'it' ? '0 0 8px rgba(255,255,255,0.1)' : 'none',
+                }}>🇮🇹</span>
+              <span className="flex items-center justify-center rounded-full text-[11px] transition-all"
+                style={{
+                  width: 26, height: 26,
+                  background: lang === 'en' ? 'rgba(255,255,255,0.15)' : 'transparent',
+                  boxShadow: lang === 'en' ? '0 0 8px rgba(255,255,255,0.1)' : 'none',
+                }}>��</span>
+            </button>
             {/* Theme picker button */}
             <button
               onClick={() => setShowThemePicker(true)}
               className="w-8 h-8 rounded-xl flex items-center justify-center active:scale-90 transition-transform"
               style={{ background: `linear-gradient(135deg, var(--accent-from), var(--accent-to))`, opacity: 0.8 }}
-              title="Cambia tema"
+              title={t.changeTheme}
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
                 <circle cx="12" cy="12" r="10"/>
@@ -234,7 +286,7 @@ const App = () => {
         />
 
         {/* Section label */}
-        <p className="text-white/30 text-xs font-semibold uppercase tracking-widest text-center mb-5">Programma</p>
+        <p className="text-white/30 text-xs font-semibold uppercase tracking-widest text-center mb-5">{t.program}</p>
 
         {/* Animated Tabs Section */}
         <div className="mb-8">
@@ -253,18 +305,18 @@ const App = () => {
                 }}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/><path d="M9 3.5A9 9 0 0 1 21 12"/></svg>
-                Genera Piano AI · {daysLeft}gg rimasti
+                {t.generateAIPlan} · {daysLeft}{t.daysLeft}
               </button>
             ) : (
               <div className="glass-light rounded-2xl p-4 text-center border border-white/5">
-                <p className="text-white/50 text-xs font-semibold mb-1">Periodo di prova terminato</p>
+                <p className="text-white/50 text-xs font-semibold mb-1">{t.trialEnded}</p>
                 <p className="text-white/25 text-[10px] leading-relaxed">
-                  Contatta il tuo PT per ricevere un piano personalizzato aggiornato.
+                  {t.trialEndedHint}
                 </p>
                 <a href="mailto:pt@tacticalstrength.it"
                   className="inline-block mt-3 px-4 py-2 rounded-xl text-xs font-semibold text-white active:scale-95 transition-transform"
                   style={{ background: 'linear-gradient(135deg, #1d4ed8, #0891b2)' }}>
-                  📧 Contatta il PT
+                  {t.contactPT}
                 </a>
               </div>
             )}
@@ -275,7 +327,7 @@ const App = () => {
         <div className="h-px bg-white/5 mx-8 mb-8"></div>
 
         {/* Day Selector */}
-        <p className="text-white/30 text-xs font-semibold uppercase tracking-widest text-center mb-4">Seleziona Giorno</p>
+        <p className="text-white/30 text-xs font-semibold uppercase tracking-widest text-center mb-4">{t.selectDay}</p>
         <div className="flex gap-2 overflow-x-auto pb-3 mb-6 justify-center">
           {Object.entries(exercisesData).map(([dayNum, dayData]) => (
             <button
@@ -293,7 +345,7 @@ const App = () => {
                   : 'none',
               }}
             >
-              <div className="text-[9px] font-medium opacity-60 leading-none mb-0.5">GG</div>
+              <div className="text-[9px] font-medium opacity-60 leading-none mb-0.5">{t.dayAbbr}</div>
               <div className="text-base font-bold leading-none">{dayNum}</div>
             </button>
           ))}
@@ -303,12 +355,12 @@ const App = () => {
         <div className="glass rounded-[24px] p-5 mb-6 shadow-premium-sm">
           <div className="flex items-center gap-2 mb-3">
             <div className={`w-2 h-2 rounded-full ${getDayGradient(day.color)}`}></div>
-            <span className="text-white/40 text-[11px] font-medium uppercase tracking-wider">{day.title.split(':')[1]}</span>
+            <span className="text-white/40 text-[11px] font-medium uppercase tracking-wider">{(t[`dayTitle${currentDay}`] || day.title).split(':')[1]}</span>
           </div>
-          <h2 className="text-xl font-bold text-white tracking-tight mb-1.5">{day.title.split(':')[0]}</h2>
-          <p className="text-white/30 text-xs leading-relaxed mb-5">{day.objective}</p>
+          <h2 className="text-xl font-bold text-white tracking-tight mb-1.5">{(t[`dayTitle${currentDay}`] || day.title).split(':')[0]}</h2>
+          <p className="text-white/30 text-xs leading-relaxed mb-5">{t[`dayObj${currentDay}`] || day.objective}</p>
           <div className="flex items-center justify-between mb-4">
-            <span className="text-white/50 text-xs font-medium">Esercizi</span>
+            <span className="text-white/50 text-xs font-medium">{t.exercises}</span>
             <div className="flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
               <span className="text-white/30 text-xs font-medium">
@@ -342,7 +394,7 @@ const App = () => {
 
         {/* Progress Section */}
         <div className="h-px bg-white/5 mx-8 mb-8 mt-8"></div>
-        <p className="text-white/30 text-xs font-semibold uppercase tracking-widest text-center mb-5">Progressi</p>
+        <p className="text-white/30 text-xs font-semibold uppercase tracking-widest text-center mb-5">{t.progress}</p>
         <AIInsightCard
           profile={{ ...profile, uid: user?.uid }}
           workouts={workouts}
@@ -361,7 +413,7 @@ const App = () => {
       {/* Day Complete Celebration */}
       <DayCompleteOverlay
         show={showDayComplete}
-        dayTitle={day.title.split(':')[0]}
+        dayTitle={(t[`dayTitle${currentDay}`] || day.title).split(':')[0]}
         exerciseCount={day.exercises.length}
         onClose={() => setShowDayComplete(false)}
       />
@@ -383,7 +435,7 @@ const App = () => {
           onClose={() => setShowAIPersonalization(false)}
           onWorkoutGenerated={async (userData) => {
             try {
-              await aiWorkout.generateWorkoutPlan(userData);
+              await aiWorkout.generateWorkoutPlan(userData, lang);
               setShowAIPersonalization(false);
             } catch (err) {
               console.error('Error generating workout:', err);

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 export const HeroFuturistic = ({ onLogin, loginLoading, isLanding = false }) => {
+  const { t, lang, toggleLang } = useLanguage();
   const [visibleWords, setVisibleWords] = useState(0);
   const [subtitleVisible, setSubtitleVisible] = useState(false);
   const [btnVisible, setBtnVisible] = useState(false);
@@ -20,10 +22,10 @@ export const HeroFuturistic = ({ onLogin, loginLoading, isLanding = false }) => 
   }, [visibleWords, titleWords.length]);
 
   const features = [
-    { emoji: '🤖', label: 'AI Personalizzato' },
-    { emoji: '🏆', label: 'Gamification' },
-    { emoji: '📊', label: 'Progressi Tracciati' },
-    { emoji: '📱', label: 'Instagram Reels' },
+    { emoji: '🤖', label: t.featureAI },
+    { emoji: '🏆', label: t.featureGamification },
+    { emoji: '📊', label: t.featureProgress },
+    { emoji: '📱', label: t.featureReels },
   ];
 
   return (
@@ -92,6 +94,36 @@ export const HeroFuturistic = ({ onLogin, loginLoading, isLanding = false }) => 
       <div className="absolute inset-0 opacity-5"
         style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\' opacity=\'1\'/%3E%3C/svg%3E")' }} />
 
+      {/* Language toggle — top right */}
+      <div className="absolute top-5 right-5 z-20">
+        <button
+          onClick={toggleLang}
+          className="flex items-center gap-0 rounded-full active:scale-95 transition-all"
+          style={{
+            background: 'rgba(255,255,255,0.08)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            padding: '3px',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+          }}
+        >
+          <span className="flex items-center justify-center rounded-full transition-all"
+            style={{
+              width: 30, height: 30,
+              fontSize: '13px',
+              background: lang === 'it' ? 'rgba(255,255,255,0.18)' : 'transparent',
+              boxShadow: lang === 'it' ? '0 0 10px rgba(255,255,255,0.12)' : 'none',
+            }}>🇮🇹</span>
+          <span className="flex items-center justify-center rounded-full transition-all"
+            style={{
+              width: 30, height: 30,
+              fontSize: '13px',
+              background: lang === 'en' ? 'rgba(255,255,255,0.18)' : 'transparent',
+              boxShadow: lang === 'en' ? '0 0 10px rgba(255,255,255,0.12)' : 'none',
+            }}>🇬🇧</span>
+        </button>
+      </div>
+
       {/* Content */}
       <div className="relative z-10 text-center px-6 max-w-sm mx-auto w-full">
         {/* Icon ring */}
@@ -130,8 +162,8 @@ export const HeroFuturistic = ({ onLogin, loginLoading, isLanding = false }) => 
           margin: '0 auto 2rem',
         }}>
           {isLanding
-            ? 'Il tuo programma di allenamento personale, potenziato dall\'AI del tuo PT.'
-            : 'La tua scheda di allenamento digitale.'}
+            ? t.loginSubtitleLanding
+            : t.loginSubtitle}
         </p>
 
         {/* Features grid (landing only) */}
@@ -184,10 +216,10 @@ export const HeroFuturistic = ({ onLogin, loginLoading, isLanding = false }) => 
                   <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
                 </svg>
               )}
-              <span>{loginLoading ? 'Accesso in corso...' : 'Inizia con Google'}</span>
+              <span>{loginLoading ? t.loginLoading : t.loginWithGoogle}</span>
             </button>
             <p style={{ color: 'rgba(255,255,255,0.18)', fontSize: '0.65rem', marginTop: '12px' }}>
-              Dati salvati in modo sicuro · Gratuito
+              {t.loginSecure}
             </p>
           </div>
         ) : (
@@ -204,7 +236,7 @@ export const HeroFuturistic = ({ onLogin, loginLoading, isLanding = false }) => 
               display: 'inline-flex', alignItems: 'center', gap: '10px',
             }}
           >
-            Inizia l'allenamento
+            {t.startWorkout}
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 5v14" /><path d="m19 12-7 7-7-7" />
             </svg>

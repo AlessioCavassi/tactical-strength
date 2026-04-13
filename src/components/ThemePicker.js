@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CATEGORY_LABELS, PARTICLE_ICONS } from '../data/themes';
+import { useLanguage } from '../i18n/LanguageContext';
 
-const CATEGORIES = [
-  { id: 'all',       label: 'Tutti',     emoji: '●' },
-  { id: 'femminile', label: 'Femminile', emoji: '🌸' },
-  { id: 'maschile',  label: 'Maschile',  emoji: '💪' },
-  { id: 'luxury',    label: 'Luxury',    emoji: '💎' },
-  { id: 'base',      label: 'Base',      emoji: '◦' },
+const getCATEGORIES = (t) => [
+  { id: 'all',       label: t.themeCatAll,       emoji: '●' },
+  { id: 'femminile', label: t.themeCatFeminine,   emoji: '🌸' },
+  { id: 'maschile',  label: t.themeCatMasculine,  emoji: '💪' },
+  { id: 'luxury',    label: t.themeCatLuxury,     emoji: '💎' },
+  { id: 'base',      label: t.themeCatBase,       emoji: '◦' },
 ];
 
 function Swatch({ theme, isActive, onSelect }) {
@@ -81,6 +82,8 @@ function Swatch({ theme, isActive, onSelect }) {
 }
 
 export default function ThemePicker({ themes, themeId, setTheme, onClose }) {
+  const { t } = useLanguage();
+  const CATEGORIES = getCATEGORIES(t);
   const [cat, setCat] = useState('all');
   const activeTheme = themes.find(t => t.id === themeId) || themes[0];
   const visible = cat === 'all' ? themes : themes.filter(t => t.category === cat);
@@ -116,9 +119,9 @@ export default function ThemePicker({ themes, themeId, setTheme, onClose }) {
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-white font-bold text-sm tracking-tight">🎨 Personalizza</p>
+              <p className="text-white font-bold text-sm tracking-tight">{t.themeTitle}</p>
               <p className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.28)' }}>
-                Scegli la tua esperienza visiva
+                {t.themeSubtitle}
               </p>
             </div>
             <button
@@ -191,7 +194,7 @@ export default function ThemePicker({ themes, themeId, setTheme, onClose }) {
               </p>
               <p className="text-[9px] mt-0.5 capitalize" style={{ color: 'rgba(255,255,255,0.25)' }}>
                 {CATEGORY_LABELS[activeTheme.category]?.emoji} {CATEGORY_LABELS[activeTheme.category]?.label}
-                {activeTheme.particles !== 'none' && ` · ${PARTICLE_ICONS[activeTheme.particles]} effetto`}
+                {activeTheme.particles !== 'none' && ` · ${PARTICLE_ICONS[activeTheme.particles]} ${t.themeEffect}`}
               </p>
             </div>
             <div className="h-6 w-16 rounded-full overflow-hidden flex-shrink-0"

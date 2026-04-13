@@ -5,6 +5,7 @@ import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 export function useUserProfile(userId) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!userId) {
@@ -15,6 +16,7 @@ export function useUserProfile(userId) {
 
     const fetchProfile = async () => {
       try {
+        setError(null);
         const docRef = doc(db, 'users', userId);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
@@ -22,8 +24,11 @@ export function useUserProfile(userId) {
         } else {
           setProfile(null);
         }
-      } catch (error) {
-        console.error('Error fetching profile:', error);
+      } catch (err) {
+        console.error('Error fetching profile:', err);
+        setError(err.code === 'permission-denied'
+          ? 'Permessi Firestore scaduti. Aggiorna le regole nella Firebase Console.'
+          : 'Errore nel caricamento del profilo. Riprova.');
       }
       setLoading(false);
     };
@@ -57,7 +62,7 @@ export function useUserProfile(userId) {
     }
   }, [userId]);
 
-  const needsOnboarding = !loading && !profile?.level;
+  const needsOnboarding = !loading && !error && !profile?.level;
 
-  return { profile, loading, saveProfile, updateProfile, needsOnboarding };
+  return { profile, loading, error, saveProfile, updateProfile, needsOnboarding };
 }

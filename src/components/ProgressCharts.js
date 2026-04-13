@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useLanguage } from '../i18n/LanguageContext';
 import {
   LineChart, Line, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, ReferenceLine,
@@ -28,6 +29,7 @@ function CustomTooltip({ active, payload }) {
 }
 
 export default function ProgressCharts({ workouts }) {
+  const { t } = useLanguage();
   // Group workouts by exercise name
   const exerciseMap = useMemo(() => {
     const map = {};
@@ -77,8 +79,8 @@ export default function ProgressCharts({ workouts }) {
     return (
       <div className="glass rounded-[24px] p-6 text-center">
         <p className="text-4xl mb-3">📊</p>
-        <p className="text-white/50 text-sm font-semibold">Nessun dato ancora</p>
-        <p className="text-white/25 text-xs mt-1">Completa degli esercizi per vedere i grafici</p>
+        <p className="text-white/50 text-sm font-semibold">{t.noDataYet}</p>
+        <p className="text-white/25 text-xs mt-1">{t.noDataHint}</p>
       </div>
     );
   }
@@ -88,8 +90,8 @@ export default function ProgressCharts({ workouts }) {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <p className="text-white font-bold text-sm tracking-tight">📈 Progressione</p>
-          <p className="text-white/30 text-[10px] mt-0.5">Peso per esercizio nel tempo</p>
+          <p className="text-white font-bold text-sm tracking-tight">{t.progression}</p>
+          <p className="text-white/30 text-[10px] mt-0.5">{t.weightOverTime}</p>
         </div>
         {improvement !== 0 && (
           <div className="px-2.5 py-1 rounded-xl text-[10px] font-bold"
@@ -97,7 +99,7 @@ export default function ProgressCharts({ workouts }) {
               background: improvement > 0 ? 'rgba(48,209,88,0.12)' : 'rgba(255,69,58,0.12)',
               color: improvement > 0 ? '#30d158' : '#ff453a',
             }}>
-            {improvement > 0 ? '+' : ''}{improvement}% vs inizio
+            {improvement > 0 ? '+' : ''}{improvement}% {t.vsStart}
           </div>
         )}
       </div>
@@ -131,11 +133,11 @@ export default function ProgressCharts({ workouts }) {
             <p className="text-white font-bold text-lg leading-none">{pr}<span className="text-white/40 text-xs ml-0.5">kg</span></p>
           </div>
           <div className="text-center">
-            <p className="text-[9px] text-white/30 font-semibold uppercase tracking-wider">Sessioni</p>
+            <p className="text-[9px] text-white/30 font-semibold uppercase tracking-wider">{t.sessions}</p>
             <p className="text-white font-bold text-lg leading-none">{data.length}</p>
           </div>
           <div className="text-center">
-            <p className="text-[9px] text-white/30 font-semibold uppercase tracking-wider">Ultimo</p>
+            <p className="text-[9px] text-white/30 font-semibold uppercase tracking-wider">{t.last}</p>
             <p className="text-white font-bold text-lg leading-none">{lastWeight}<span className="text-white/40 text-xs ml-0.5">kg</span></p>
           </div>
         </div>
@@ -181,7 +183,7 @@ export default function ProgressCharts({ workouts }) {
         </ResponsiveContainer>
       ) : (
         <div className="h-20 flex items-center justify-center">
-          <p className="text-white/20 text-xs">Ancora pochi dati — continua ad allenarti!</p>
+          <p className="text-white/20 text-xs">{t.fewDataHint}</p>
         </div>
       )}
     </div>

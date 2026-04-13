@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLanguage } from '../i18n/LanguageContext';
 
-const LEVELS = [
+const getLEVELS = (t) => [
   {
     id: 'beginner',
     emoji: '🌱',
-    title: 'Principiante',
-    subtitle: 'Sono nuovo nel mondo del fitness',
-    desc: 'Spiegazioni dettagliate, guida passo-passo, consigli su respirazione e postura.',
+    title: t.lvl_beginner,
+    subtitle: t.lvl_beginnerSub,
+    desc: t.lvl_beginnerDesc,
     color: 'from-green-500/20 to-emerald-500/20',
     border: 'border-green-500/30',
     text: 'text-green-400',
@@ -15,9 +16,9 @@ const LEVELS = [
   {
     id: 'intermediate',
     emoji: '💪',
-    title: 'Intermedio',
-    subtitle: 'Mi alleno da qualche mese',
-    desc: 'Spiegazioni sintetiche, focus su progressione e tecnica avanzata.',
+    title: t.lvl_intermediate,
+    subtitle: t.lvl_intermediateSub,
+    desc: t.lvl_intermediateDesc,
     color: 'from-blue-500/20 to-cyan-500/20',
     border: 'border-blue-500/30',
     text: 'text-blue-400',
@@ -25,38 +26,38 @@ const LEVELS = [
   {
     id: 'advanced',
     emoji: '🔥',
-    title: 'Esperto',
-    subtitle: 'Mi alleno da anni',
-    desc: 'UI minimale, dati e performance. Niente spiegazioni, solo numeri.',
+    title: t.lvl_advanced,
+    subtitle: t.lvl_advancedSub,
+    desc: t.lvl_advancedDesc,
     color: 'from-orange-500/20 to-red-500/20',
     border: 'border-orange-500/30',
     text: 'text-orange-400',
   },
 ];
 
-const GOALS = [
-  { id: 'strength', emoji: '🏋️', label: 'Forza', desc: 'Sollevare di più' },
-  { id: 'muscle', emoji: '💎', label: 'Massa', desc: 'Costruire muscolo' },
-  { id: 'endurance', emoji: '🫁', label: 'Resistenza', desc: 'Più stamina' },
-  { id: 'weightloss', emoji: '⚡', label: 'Definizione', desc: 'Perdere grasso' },
-  { id: 'health', emoji: '🧘', label: 'Salute', desc: 'Stare meglio' },
-  { id: 'sport', emoji: '🎯', label: 'Sport', desc: 'Performance atletica' },
+const getGOALS = (t) => [
+  { id: 'strength', emoji: '🏋️', label: t.goal_strength, desc: t.goal_strengthDesc },
+  { id: 'muscle', emoji: '💎', label: t.goal_muscle, desc: t.goal_muscleDesc },
+  { id: 'endurance', emoji: '🫁', label: t.goal_endurance, desc: t.goal_enduranceDesc },
+  { id: 'weightloss', emoji: '⚡', label: t.goal_weightloss, desc: t.goal_weightlossDesc },
+  { id: 'health', emoji: '🧘', label: t.goal_health, desc: t.goal_healthDesc },
+  { id: 'sport', emoji: '🎯', label: t.goal_sport, desc: t.goal_sportDesc },
 ];
 
-const EXPERIENCE = [
-  { id: '0-3', label: '0-3 mesi', desc: 'Appena iniziato' },
-  { id: '3-6', label: '3-6 mesi', desc: 'Le basi ci sono' },
-  { id: '6-12', label: '6-12 mesi', desc: 'Un anno di lavoro' },
-  { id: '12-24', label: '1-2 anni', desc: 'Solidità tecnica' },
-  { id: '24+', label: '2+ anni', desc: 'Veterano' },
+const getEXPERIENCE = (t) => [
+  { id: '0-3', label: t.exp_0_3, desc: t.exp_0_3_desc },
+  { id: '3-6', label: t.exp_3_6, desc: t.exp_3_6_desc },
+  { id: '6-12', label: t.exp_6_12, desc: t.exp_6_12_desc },
+  { id: '12-24', label: t.exp_12_24, desc: t.exp_12_24_desc },
+  { id: '24+', label: t.exp_24, desc: t.exp_24_desc },
 ];
 
-const INJURIES = [
-  { id: 'none', emoji: '✅', label: 'Nessuno' },
-  { id: 'knee', emoji: '🦵', label: 'Ginocchia' },
-  { id: 'shoulder', emoji: '💪', label: 'Spalle' },
-  { id: 'back', emoji: '🔙', label: 'Schiena' },
-  { id: 'wrist', emoji: '✋', label: 'Polsi' },
+const getINJURIES = (t) => [
+  { id: 'none', emoji: '✅', label: t.inj_none },
+  { id: 'knee', emoji: '🦵', label: t.inj_knee },
+  { id: 'shoulder', emoji: '💪', label: t.inj_shoulder },
+  { id: 'back', emoji: '🔙', label: t.inj_back },
+  { id: 'wrist', emoji: '✋', label: t.inj_wrist },
 ];
 
 const AGE_RANGES = [
@@ -68,18 +69,18 @@ const AGE_RANGES = [
   { id: '50+',   label: '50+',    emoji: '🦅' },
 ];
 
-const FREQ_OPTIONS = [
-  { id: '2', label: '2 giorni', desc: 'Manutenzione' },
-  { id: '3', label: '3 giorni', desc: 'Progressione solida' },
-  { id: '4', label: '4 giorni', desc: 'Intensità alta' },
-  { id: '5', label: '5 giorni', desc: 'Atleta dedicato' },
+const getFREQ_OPTIONS = (t) => [
+  { id: '2', label: t.freq_2, desc: t.freq_2_desc },
+  { id: '3', label: t.freq_3, desc: t.freq_3_desc },
+  { id: '4', label: t.freq_4, desc: t.freq_4_desc },
+  { id: '5', label: t.freq_5, desc: t.freq_5_desc },
 ];
 
-const DURATION_OPTIONS = [
-  { id: '30',  label: '30 min', desc: 'Express' },
-  { id: '45',  label: '45 min', desc: 'Standard' },
-  { id: '60',  label: '60 min', desc: 'Completo' },
-  { id: '90',  label: '90 min', desc: 'Full session' },
+const getDURATION_OPTIONS = (t) => [
+  { id: '30',  label: '30 min', desc: t.dur_30_desc },
+  { id: '45',  label: '45 min', desc: t.dur_45_desc },
+  { id: '60',  label: '60 min', desc: t.dur_60_desc },
+  { id: '90',  label: '90 min', desc: t.dur_90_desc },
 ];
 
 const pageVariants = {
@@ -89,6 +90,14 @@ const pageVariants = {
 };
 
 export default function OnboardingScreen({ user, onComplete }) {
+  const { t } = useLanguage();
+  const LEVELS = getLEVELS(t);
+  const GOALS = getGOALS(t);
+  const EXPERIENCE = getEXPERIENCE(t);
+  const INJURIES = getINJURIES(t);
+  const FREQ_OPTIONS = getFREQ_OPTIONS(t);
+  const DURATION_OPTIONS = getDURATION_OPTIONS(t);
+
   const [step, setStep] = useState(0);
   const [data, setData] = useState({
     level: '',
@@ -162,7 +171,7 @@ export default function OnboardingScreen({ user, onComplete }) {
         <div className="flex items-center justify-between mb-4">
           {step > 0 ? (
             <button onClick={() => setStep(s => s - 1)} className="text-white/40 text-sm font-medium active:scale-95 transition-transform">
-              ← Indietro
+              {t.back}
             </button>
           ) : <div />}
           <span className="text-white/20 text-[10px] font-semibold uppercase tracking-widest">{step + 1}/{totalSteps}</span>
@@ -182,8 +191,8 @@ export default function OnboardingScreen({ user, onComplete }) {
         <AnimatePresence mode="wait">
           {step === 0 && (
             <motion.div key="step0" variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3 }}>
-              <h1 className="text-2xl font-black text-white tracking-tight mb-2">Qual è il tuo livello?</h1>
-              <p className="text-white/40 text-sm mb-8">Adatteremo l'app alle tue esigenze</p>
+              <h1 className="text-2xl font-black text-white tracking-tight mb-2">{t.onb_levelTitle}</h1>
+              <p className="text-white/40 text-sm mb-8">{t.onb_levelSubtitle}</p>
               <div className="space-y-3">
                 {LEVELS.map(lvl => (
                   <button
@@ -218,8 +227,8 @@ export default function OnboardingScreen({ user, onComplete }) {
 
           {step === 1 && (
             <motion.div key="step1" variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3 }}>
-              <h1 className="text-2xl font-black text-white tracking-tight mb-2">I tuoi obiettivi</h1>
-              <p className="text-white/40 text-sm mb-8">Seleziona uno o più obiettivi</p>
+              <h1 className="text-2xl font-black text-white tracking-tight mb-2">{t.onb_goalsTitle}</h1>
+              <p className="text-white/40 text-sm mb-8">{t.onb_goalsSubtitle}</p>
               <div className="grid grid-cols-2 gap-3">
                 {GOALS.map(goal => (
                   <button
@@ -242,8 +251,8 @@ export default function OnboardingScreen({ user, onComplete }) {
 
           {step === 2 && (
             <motion.div key="step2" variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3 }}>
-              <h1 className="text-2xl font-black text-white tracking-tight mb-2">Da quanto ti alleni?</h1>
-              <p className="text-white/40 text-sm mb-8">Aiuta a calibrare la progressione</p>
+              <h1 className="text-2xl font-black text-white tracking-tight mb-2">{t.onb_experienceTitle}</h1>
+              <p className="text-white/40 text-sm mb-8">{t.onb_experienceSubtitle}</p>
               <div className="space-y-2">
                 {EXPERIENCE.map(exp => (
                   <button
@@ -274,10 +283,10 @@ export default function OnboardingScreen({ user, onComplete }) {
 
           {step === 3 && (
             <motion.div key="step3" variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3 }}>
-              <h1 className="text-2xl font-black text-white tracking-tight mb-2">I tuoi dati</h1>
-              <p className="text-white/40 text-sm mb-8">Personalizzare le statistiche e i suggerimenti AI</p>
+              <h1 className="text-2xl font-black text-white tracking-tight mb-2">{t.onb_dataTitle}</h1>
+              <p className="text-white/40 text-sm mb-8">{t.onb_dataSubtitle}</p>
 
-              <p className="text-white/40 text-xs font-semibold uppercase tracking-wider mb-3">Età</p>
+              <p className="text-white/40 text-xs font-semibold uppercase tracking-wider mb-3">{t.onb_age}</p>
               <div className="grid grid-cols-3 gap-2 mb-8">
                 {AGE_RANGES.map(a => (
                   <button
@@ -297,28 +306,28 @@ export default function OnboardingScreen({ user, onComplete }) {
                 ))}
               </div>
 
-              <p className="text-white/40 text-xs font-semibold uppercase tracking-wider mb-3">Peso attuale (opzionale)</p>
+              <p className="text-white/40 text-xs font-semibold uppercase tracking-wider mb-3">{t.onb_weightLabel}</p>
               <div className="flex items-center glass-light rounded-2xl px-4 py-3.5 gap-3">
                 <input
                   type="number"
                   inputMode="decimal"
-                  placeholder="es. 75"
+                  placeholder={t.onb_weightPlaceholder}
                   value={data.bodyWeight}
                   onChange={e => setData(prev => ({ ...prev, bodyWeight: e.target.value }))}
                   className="flex-1 bg-transparent text-white text-lg font-bold outline-none placeholder-white/15"
                 />
                 <span className="text-white/30 text-sm font-semibold">kg</span>
               </div>
-              <p className="text-white/15 text-[10px] mt-2 ml-1">Usato per calcolare la forza relativa e i tuoi progressi personali</p>
+              <p className="text-white/15 text-[10px] mt-2 ml-1">{t.onb_weightHint}</p>
             </motion.div>
           )}
 
           {step === 4 && (
             <motion.div key="step4" variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3 }}>
-              <h1 className="text-2xl font-black text-white tracking-tight mb-2">Il tuo piano</h1>
-              <p className="text-white/40 text-sm mb-8">Quante volte ti alleni e per quanto tempo?</p>
+              <h1 className="text-2xl font-black text-white tracking-tight mb-2">{t.onb_planTitle}</h1>
+              <p className="text-white/40 text-sm mb-8">{t.onb_planSubtitle}</p>
 
-              <p className="text-white/40 text-xs font-semibold uppercase tracking-wider mb-3">Giorni a settimana</p>
+              <p className="text-white/40 text-xs font-semibold uppercase tracking-wider mb-3">{t.onb_daysPerWeek}</p>
               <div className="grid grid-cols-2 gap-2.5 mb-8">
                 {FREQ_OPTIONS.map(f => (
                   <button
@@ -338,7 +347,7 @@ export default function OnboardingScreen({ user, onComplete }) {
                 ))}
               </div>
 
-              <p className="text-white/40 text-xs font-semibold uppercase tracking-wider mb-3">Durata sessione</p>
+              <p className="text-white/40 text-xs font-semibold uppercase tracking-wider mb-3">{t.onb_sessionDuration}</p>
               <div className="grid grid-cols-2 gap-2.5">
                 {DURATION_OPTIONS.map(d => (
                   <button
@@ -362,8 +371,8 @@ export default function OnboardingScreen({ user, onComplete }) {
 
           {step === 5 && (
             <motion.div key="step5" variants={pageVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.3 }}>
-              <h1 className="text-2xl font-black text-white tracking-tight mb-2">Problemi fisici?</h1>
-              <p className="text-white/40 text-sm mb-8">Per adattare gli esercizi alle tue necessità</p>
+              <h1 className="text-2xl font-black text-white tracking-tight mb-2">{t.onb_injuriesTitle}</h1>
+              <p className="text-white/40 text-sm mb-8">{t.onb_injuriesSubtitle}</p>
               <div className="grid grid-cols-2 gap-3">
                 {INJURIES.map(inj => (
                   <button
@@ -402,7 +411,7 @@ export default function OnboardingScreen({ user, onComplete }) {
               : 'glass-light text-white/20 cursor-not-allowed'
           }`}
         >
-          {step < totalSteps - 1 ? 'Continua' : 'Inizia ad allenarti'}
+          {step < totalSteps - 1 ? t.continue : t.onb_startTraining}
         </button>
       </div>
     </div>

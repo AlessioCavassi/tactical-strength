@@ -8,62 +8,64 @@ const XP_STREAK_BONUS = 50;
 const XP_PR_BONUS = 75;
 const XP_NOTE_BONUS = 10;
 
-// Level thresholds
-const LEVELS = [
-  { level: 1, title: 'Recluta', xpNeeded: 0, emoji: '🌱' },
-  { level: 2, title: 'Cadetto', xpNeeded: 100, emoji: '🏃' },
-  { level: 3, title: 'Soldato', xpNeeded: 300, emoji: '💪' },
-  { level: 4, title: 'Sergente', xpNeeded: 600, emoji: '🎖️' },
-  { level: 5, title: 'Tenente', xpNeeded: 1000, emoji: '⭐' },
-  { level: 6, title: 'Capitano', xpNeeded: 1500, emoji: '🏅' },
-  { level: 7, title: 'Maggiore', xpNeeded: 2200, emoji: '🔥' },
-  { level: 8, title: 'Colonnello', xpNeeded: 3000, emoji: '⚡' },
-  { level: 9, title: 'Generale', xpNeeded: 4000, emoji: '🦅' },
-  { level: 10, title: 'Leggenda', xpNeeded: 5500, emoji: '🏆' },
+// Level thresholds — localized via t()
+export const getLEVELS = (t) => [
+  { level: 1, title: t?.gamLvl1 || 'Recluta', xpNeeded: 0, emoji: '🌱' },
+  { level: 2, title: t?.gamLvl2 || 'Cadetto', xpNeeded: 100, emoji: '🏃' },
+  { level: 3, title: t?.gamLvl3 || 'Soldato', xpNeeded: 300, emoji: '💪' },
+  { level: 4, title: t?.gamLvl4 || 'Sergente', xpNeeded: 600, emoji: '🎖️' },
+  { level: 5, title: t?.gamLvl5 || 'Tenente', xpNeeded: 1000, emoji: '⭐' },
+  { level: 6, title: t?.gamLvl6 || 'Capitano', xpNeeded: 1500, emoji: '🏅' },
+  { level: 7, title: t?.gamLvl7 || 'Maggiore', xpNeeded: 2200, emoji: '🔥' },
+  { level: 8, title: t?.gamLvl8 || 'Colonnello', xpNeeded: 3000, emoji: '⚡' },
+  { level: 9, title: t?.gamLvl9 || 'Generale', xpNeeded: 4000, emoji: '🦅' },
+  { level: 10, title: t?.gamLvl10 || 'Leggenda', xpNeeded: 5500, emoji: '🏆' },
 ];
+const LEVELS = getLEVELS();
 
-// Badge definitions — physical AND mental/psychological
-const BADGES = [
+// Badge definitions — localized via t()
+export const getBADGES = (t) => [
   // ── FISICA: Volume ──
-  { id: 'first_workout', title: 'Prima Sessione', desc: 'Completa il tuo primo esercizio', emoji: '🎯', category: 'fisica', condition: (s) => s.totalExercises >= 1 },
-  { id: 'five_workouts', title: 'Costante', desc: 'Completa 5 esercizi', emoji: '🔄', category: 'fisica', condition: (s) => s.totalExercises >= 5 },
-  { id: 'ten_workouts', title: 'Macchina', desc: 'Completa 10 esercizi', emoji: '⚙️', category: 'fisica', condition: (s) => s.totalExercises >= 10 },
-  { id: 'twentyfive_workouts', title: 'Inarrestabile', desc: 'Completa 25 esercizi', emoji: '🚀', category: 'fisica', condition: (s) => s.totalExercises >= 25 },
-  { id: 'fifty_workouts', title: 'Veterano', desc: 'Completa 50 esercizi', emoji: '🎖️', category: 'fisica', condition: (s) => s.totalExercises >= 50 },
-  { id: 'hundred_workouts', title: 'Centurione', desc: 'Completa 100 esercizi', emoji: '💯', category: 'fisica', condition: (s) => s.totalExercises >= 100 },
+  { id: 'first_workout', title: t?.[`badge_first_workout`] || 'Prima Sessione', desc: t?.[`badge_first_workout_desc`] || 'Completa il tuo primo esercizio', emoji: '🎯', category: 'fisica', condition: (s) => s.totalExercises >= 1 },
+  { id: 'five_workouts', title: t?.[`badge_five_workouts`] || 'Costante', desc: t?.[`badge_five_workouts_desc`] || 'Completa 5 esercizi', emoji: '🔄', category: 'fisica', condition: (s) => s.totalExercises >= 5 },
+  { id: 'ten_workouts', title: t?.[`badge_ten_workouts`] || 'Macchina', desc: t?.[`badge_ten_workouts_desc`] || 'Completa 10 esercizi', emoji: '⚙️', category: 'fisica', condition: (s) => s.totalExercises >= 10 },
+  { id: 'twentyfive_workouts', title: t?.[`badge_twentyfive_workouts`] || 'Inarrestabile', desc: t?.[`badge_twentyfive_workouts_desc`] || 'Completa 25 esercizi', emoji: '🚀', category: 'fisica', condition: (s) => s.totalExercises >= 25 },
+  { id: 'fifty_workouts', title: t?.[`badge_fifty_workouts`] || 'Veterano', desc: t?.[`badge_fifty_workouts_desc`] || 'Completa 50 esercizi', emoji: '🎖️', category: 'fisica', condition: (s) => s.totalExercises >= 50 },
+  { id: 'hundred_workouts', title: t?.[`badge_hundred_workouts`] || 'Centurione', desc: t?.[`badge_hundred_workouts_desc`] || 'Completa 100 esercizi', emoji: '💯', category: 'fisica', condition: (s) => s.totalExercises >= 100 },
   // ── FISICA: Streak ──
-  { id: 'streak_3', title: 'Tre di Fila', desc: '3 giorni di streak', emoji: '🔥', category: 'fisica', condition: (s) => s.bestStreak >= 3 },
-  { id: 'streak_7', title: 'Settimana Perfetta', desc: '7 giorni di streak', emoji: '💎', category: 'fisica', condition: (s) => s.bestStreak >= 7 },
-  { id: 'streak_14', title: 'Due Settimane', desc: '14 giorni di streak', emoji: '👑', category: 'fisica', condition: (s) => s.bestStreak >= 14 },
-  { id: 'streak_30', title: 'Mese Tattico', desc: '30 giorni di streak', emoji: '🦅', category: 'fisica', condition: (s) => s.bestStreak >= 30 },
+  { id: 'streak_3', title: t?.[`badge_streak_3`] || 'Tre di Fila', desc: t?.[`badge_streak_3_desc`] || '3 giorni di streak', emoji: '🔥', category: 'fisica', condition: (s) => s.bestStreak >= 3 },
+  { id: 'streak_7', title: t?.[`badge_streak_7`] || 'Settimana Perfetta', desc: t?.[`badge_streak_7_desc`] || '7 giorni di streak', emoji: '💎', category: 'fisica', condition: (s) => s.bestStreak >= 7 },
+  { id: 'streak_14', title: t?.[`badge_streak_14`] || 'Due Settimane', desc: t?.[`badge_streak_14_desc`] || '14 giorni di streak', emoji: '👑', category: 'fisica', condition: (s) => s.bestStreak >= 14 },
+  { id: 'streak_30', title: t?.[`badge_streak_30`] || 'Mese Tattico', desc: t?.[`badge_streak_30_desc`] || '30 giorni di streak', emoji: '🦅', category: 'fisica', condition: (s) => s.bestStreak >= 30 },
   // ── FISICA: Performance ──
-  { id: 'first_pr', title: 'Primo Record', desc: 'Batti il tuo primo PR', emoji: '🏆', category: 'fisica', condition: (s) => s.totalPRs >= 1 },
-  { id: 'five_prs', title: 'Collezionista', desc: 'Batti 5 PR', emoji: '💪', category: 'fisica', condition: (s) => s.totalPRs >= 5 },
-  { id: 'ten_prs', title: 'Record Breaker', desc: 'Batti 10 PR', emoji: '⚡', category: 'fisica', condition: (s) => s.totalPRs >= 10 },
-  { id: 'all_days', title: 'Completo', desc: 'Allena tutti e 5 i giorni', emoji: '⭐', category: 'fisica', condition: (s) => s.daysCompleted >= 5 },
+  { id: 'first_pr', title: t?.[`badge_first_pr`] || 'Primo Record', desc: t?.[`badge_first_pr_desc`] || 'Batti il tuo primo PR', emoji: '🏆', category: 'fisica', condition: (s) => s.totalPRs >= 1 },
+  { id: 'five_prs', title: t?.[`badge_five_prs`] || 'Collezionista', desc: t?.[`badge_five_prs_desc`] || 'Batti 5 PR', emoji: '💪', category: 'fisica', condition: (s) => s.totalPRs >= 5 },
+  { id: 'ten_prs', title: t?.[`badge_ten_prs`] || 'Record Breaker', desc: t?.[`badge_ten_prs_desc`] || 'Batti 10 PR', emoji: '⚡', category: 'fisica', condition: (s) => s.totalPRs >= 10 },
+  { id: 'all_days', title: t?.[`badge_all_days`] || 'Completo', desc: t?.[`badge_all_days_desc`] || 'Allena tutti e 5 i giorni', emoji: '⭐', category: 'fisica', condition: (s) => s.daysCompleted >= 5 },
   // ── FISICA: Speciali ──
-  { id: 'early_bird', title: 'Alba del Guerriero', desc: 'Completa 5 allenamenti prima delle 8:00', emoji: '🌅', category: 'fisica', condition: (s) => (s.earlyWorkouts || 0) >= 5 },
-  { id: 'night_owl', title: 'Lupo Notturno', desc: 'Completa 5 allenamenti dopo le 21:00', emoji: '🌙', category: 'fisica', condition: (s) => (s.lateWorkouts || 0) >= 5 },
-  { id: 'pr_machine', title: 'PR Machine', desc: 'Batti 3 PR nella stessa settimana', emoji: '💥', category: 'fisica', condition: (s) => (s.weeklyPRs || 0) >= 3 },
+  { id: 'early_bird', title: t?.[`badge_early_bird`] || 'Alba del Guerriero', desc: t?.[`badge_early_bird_desc`] || 'Completa 5 allenamenti prima delle 8:00', emoji: '🌅', category: 'fisica', condition: (s) => (s.earlyWorkouts || 0) >= 5 },
+  { id: 'night_owl', title: t?.[`badge_night_owl`] || 'Lupo Notturno', desc: t?.[`badge_night_owl_desc`] || 'Completa 5 allenamenti dopo le 21:00', emoji: '🌙', category: 'fisica', condition: (s) => (s.lateWorkouts || 0) >= 5 },
+  { id: 'pr_machine', title: t?.[`badge_pr_machine`] || 'PR Machine', desc: t?.[`badge_pr_machine_desc`] || 'Batti 3 PR nella stessa settimana', emoji: '💥', category: 'fisica', condition: (s) => (s.weeklyPRs || 0) >= 3 },
   // ── MENTALE: Consapevolezza ──
-  { id: 'note_taker', title: 'Studioso', desc: 'Scrivi la tua prima nota', emoji: '📝', category: 'mentale', condition: (s) => s.totalNotes >= 1 },
-  { id: 'deep_thinker', title: 'Mindful', desc: 'Scrivi note su 5 esercizi diversi', emoji: '🧘', category: 'mentale', condition: (s) => s.totalNotes >= 5 },
-  { id: 'self_aware', title: 'Autoconsapevole', desc: 'Scrivi note su 15 esercizi', emoji: '🪞', category: 'mentale', condition: (s) => s.totalNotes >= 15 },
+  { id: 'note_taker', title: t?.[`badge_note_taker`] || 'Studioso', desc: t?.[`badge_note_taker_desc`] || 'Scrivi la tua prima nota', emoji: '📝', category: 'mentale', condition: (s) => s.totalNotes >= 1 },
+  { id: 'deep_thinker', title: t?.[`badge_deep_thinker`] || 'Mindful', desc: t?.[`badge_deep_thinker_desc`] || 'Scrivi note su 5 esercizi diversi', emoji: '🧘', category: 'mentale', condition: (s) => s.totalNotes >= 5 },
+  { id: 'self_aware', title: t?.[`badge_self_aware`] || 'Autoconsapevole', desc: t?.[`badge_self_aware_desc`] || 'Scrivi note su 15 esercizi', emoji: '🪞', category: 'mentale', condition: (s) => s.totalNotes >= 15 },
   // ── MENTALE: Resilienza ──
-  { id: 'comeback', title: 'Rinascita', desc: 'Torna ad allenarti dopo una pausa', emoji: '🌅', category: 'mentale', condition: (s) => s.comebacks >= 1 },
-  { id: 'mental_warrior', title: 'Guerriero Mentale', desc: 'Completa 3 sessioni difficili (RPE 9+)', emoji: '🧠', category: 'mentale', condition: (s) => (s.highRpeSessions || 0) >= 3 },
-  { id: 'process_believer', title: 'Il Processo', desc: 'Allenati per 30 giorni totali (non consecutivi)', emoji: '🗓️', category: 'mentale', condition: (s) => (s.daysWorkedOut || []).length >= 30 },
-  { id: 'discipline', title: 'Disciplina', desc: 'Allenati in 3 giorni diversi della settimana', emoji: '⚔️', category: 'mentale', condition: (s) => s.daysCompleted >= 3 },
+  { id: 'comeback', title: t?.[`badge_comeback`] || 'Rinascita', desc: t?.[`badge_comeback_desc`] || 'Torna ad allenarti dopo una pausa', emoji: '🌅', category: 'mentale', condition: (s) => s.comebacks >= 1 },
+  { id: 'mental_warrior', title: t?.[`badge_mental_warrior`] || 'Guerriero Mentale', desc: t?.[`badge_mental_warrior_desc`] || 'Completa 3 sessioni difficili (RPE 9+)', emoji: '🧠', category: 'mentale', condition: (s) => (s.highRpeSessions || 0) >= 3 },
+  { id: 'process_believer', title: t?.[`badge_process_believer`] || 'Il Processo', desc: t?.[`badge_process_believer_desc`] || 'Allenati per 30 giorni totali (non consecutivi)', emoji: '🗓️', category: 'mentale', condition: (s) => (s.daysWorkedOut || []).length >= 30 },
+  { id: 'discipline', title: t?.[`badge_discipline`] || 'Disciplina', desc: t?.[`badge_discipline_desc`] || 'Allenati in 3 giorni diversi della settimana', emoji: '⚔️', category: 'mentale', condition: (s) => s.daysCompleted >= 3 },
   // ── MENTALE: Crescita ──
-  { id: 'level5', title: 'Forza Interiore', desc: 'Raggiungi il livello 5', emoji: '💫', category: 'mentale', condition: (s) => s.xp >= 1000 },
-  { id: 'level8', title: 'Elite Mentality', desc: 'Raggiungi il livello 8', emoji: '🌟', category: 'mentale', condition: (s) => s.xp >= 3000 },
-  { id: 'explorer', title: 'Curioso', desc: 'Prova esercizi da 4 giorni diversi', emoji: '🔭', category: 'mentale', condition: (s) => s.daysCompleted >= 4 },
-  { id: 'hard_session', title: 'Oltre il Limite', desc: 'Completa una sessione con RPE 10 su tutti gli esercizi', emoji: '🤯', category: 'mentale', condition: (s) => (s.perfectRPE10 || 0) >= 1 },
-  { id: 'consistency_king', title: 'Re della Costanza', desc: 'Allenati per 4 settimane consecutive (almeno 2 giorni/sett.)', emoji: '👑', category: 'mentale', condition: (s) => (s.consistentWeeks || 0) >= 4 },
+  { id: 'level5', title: t?.[`badge_level5`] || 'Forza Interiore', desc: t?.[`badge_level5_desc`] || 'Raggiungi il livello 5', emoji: '💫', category: 'mentale', condition: (s) => s.xp >= 1000 },
+  { id: 'level8', title: t?.[`badge_level8`] || 'Elite Mentality', desc: t?.[`badge_level8_desc`] || 'Raggiungi il livello 8', emoji: '🌟', category: 'mentale', condition: (s) => s.xp >= 3000 },
+  { id: 'explorer', title: t?.[`badge_explorer`] || 'Curioso', desc: t?.[`badge_explorer_desc`] || 'Prova esercizi da 4 giorni diversi', emoji: '🔭', category: 'mentale', condition: (s) => s.daysCompleted >= 4 },
+  { id: 'hard_session', title: t?.[`badge_hard_session`] || 'Oltre il Limite', desc: t?.[`badge_hard_session_desc`] || 'Completa una sessione con RPE 10 su tutti gli esercizi', emoji: '🤯', category: 'mentale', condition: (s) => (s.perfectRPE10 || 0) >= 1 },
+  { id: 'consistency_king', title: t?.[`badge_consistency_king`] || 'Re della Costanza', desc: t?.[`badge_consistency_king_desc`] || 'Allenati per 4 settimane consecutive (almeno 2 giorni/sett.)', emoji: '👑', category: 'mentale', condition: (s) => (s.consistentWeeks || 0) >= 4 },
 ];
+const BADGES = getBADGES();
 
-// Post-workout motivational quotes (shown after completing exercises)
-export const WORKOUT_QUOTES = [
+// Post-workout motivational quotes — localized via t()
+export const getWORKOUT_QUOTES = (t) => t?.quotes || [
   { text: "Il dolore che senti oggi è la forza che sentirai domani.", author: "Arnold Schwarzenegger" },
   { text: "Non contare i giorni, fai sì che i giorni contino.", author: "Muhammad Ali" },
   { text: "Il tuo corpo può farcela. È la tua mente che devi convincere.", author: "Anonimo" },
@@ -85,6 +87,7 @@ export const WORKOUT_QUOTES = [
   { text: "Se non ti fa paura, non ti farà crescere.", author: "Tactical Strength PT" },
   { text: "Il recupero non è debolezza. È tattica.", author: "Tactical Strength PT" },
 ];
+export const WORKOUT_QUOTES = getWORKOUT_QUOTES();
 
 export function useGamification(userId) {
   const [stats, setStats] = useState(null);

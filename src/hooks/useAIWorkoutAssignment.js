@@ -34,11 +34,11 @@ const checkRateLimit = () => {
 
   if (data.hourly.length >= MAX_REQUESTS_PER_HOUR) {
     const nextAvailable = Math.ceil((data.hourly[0] + 60 * 60 * 1000 - now) / 60000);
-    return { allowed: false, reason: `Limite orario raggiunto (${MAX_REQUESTS_PER_HOUR}/ora). Riprova tra ${nextAvailable} minuti.` };
+    return { allowed: false, reasonIT: `Limite orario raggiunto (${MAX_REQUESTS_PER_HOUR}/ora). Riprova tra ${nextAvailable} minuti.`, reasonEN: `Hourly limit reached (${MAX_REQUESTS_PER_HOUR}/hr). Retry in ${nextAvailable} min.` };
   }
   if (data.daily.length >= MAX_REQUESTS_PER_DAY) {
     const nextAvailable = Math.ceil((data.daily[0] + 24 * 60 * 60 * 1000 - now) / 3600000);
-    return { allowed: false, reason: `Limite giornaliero raggiunto (${MAX_REQUESTS_PER_DAY}/giorno). Riprova tra ${nextAvailable} ore.` };
+    return { allowed: false, reasonIT: `Limite giornaliero raggiunto (${MAX_REQUESTS_PER_DAY}/giorno). Riprova tra ${nextAvailable} ore.`, reasonEN: `Daily limit reached (${MAX_REQUESTS_PER_DAY}/day). Retry in ${nextAvailable} hrs.` };
   }
 
   return { allowed: true, remainingHourly: MAX_REQUESTS_PER_HOUR - data.hourly.length, remainingDaily: MAX_REQUESTS_PER_DAY - data.daily.length };
@@ -58,12 +58,12 @@ const useAIWorkoutAssignment = () => {
   const [lastAssignment, setLastAssignment] = useState(null);
   const [rateLimitInfo, setRateLimitInfo] = useState(() => checkRateLimit());
 
-  const generateWorkoutPlan = useCallback(async (userData) => {
+  const generateWorkoutPlan = useCallback(async (userData, lang = 'it') => {
     // ── RATE LIMIT CHECK (enforced before every call) ──
     const limit = checkRateLimit();
     setRateLimitInfo(limit);
     if (!limit.allowed) {
-      const msg = limit.reason;
+      const msg = lang === 'en' ? limit.reasonEN : limit.reasonIT;
       setError(msg);
       throw new Error(msg);
     }
@@ -74,7 +74,9 @@ const useAIWorkoutAssignment = () => {
     try {
       const apiKey = process.env.REACT_APP_GEMINI_API_KEY;
       if (!apiKey) {
-        throw new Error('Chiave API Gemini non configurata. Aggiungi REACT_APP_GEMINI_API_KEY in .env');
+        throw new Error(lang === 'en'
+          ? 'Gemini API key not configured. Add REACT_APP_GEMINI_API_KEY in .env'
+          : 'Chiave API Gemini non configurata. Aggiungi REACT_APP_GEMINI_API_KEY in .env');
       }
 
       const genAI = new GoogleGenerativeAI(apiKey);
@@ -87,7 +89,7 @@ const useAIWorkoutAssignment = () => {
         },
       });
 
-      const prompt = createWorkoutPrompt(userData);
+      const prompt = createWorkoutPrompt(userData, lang);
       
       const result = await model.generateContent(prompt);
       const response = await result.response;
@@ -118,16 +120,85 @@ const useAIWorkoutAssignment = () => {
   };
 };
 
-const createWorkoutPrompt = (userData) => {
+const createWorkoutPrompt = (userData, lang = 'it') => {
   const { level, goals, injuries, experience, preferredDays, sessionDuration } = userData;
 
   const injuryNote = injuries && injuries.length > 0 && !injuries.includes('none')
     ? injuries.join(', ')
-    : 'Nessun problema fisico';
+    : (lang === 'en' ? 'No physical issues' : 'Nessun problema fisico');
 
-  const goalsText = goals && goals.length > 0 ? goals.join(', ') : 'forza generale';
+  const goalsText = goals && goals.length > 0 ? goals.join(', ') : (lang === 'en' ? 'general strength' : 'forza generale');
 
-  return `Sei un personal trainer esperto di Tactical Strength. Devi creare un piano di allenamento personalizzato basandoti ESCLUSIVAMENTE sulla metodologia qui sotto e sul profilo dell'atleta.
+  const daysAvailable = preferredDays ? preferredDays.length : 4;
+  const duration = sessionDuration || 60;
+
+  if (lang === 'en') {
+    return `You are an expert personal trainer at Tactical Strength. Create a personalized workout plan based EXCLUSIVELY on the methodology below and the athlete's profile. Respond ENTIRELY in English.
+
+=== PT KNOWLEDGE BASE ===
+${PT_KNOWLEDGE_BASE}
+
+=== ATHLETE PROFILE ===
+- Level: ${level}
+- Goals: ${goalsText}
+- Physical issues/injuries: ${injuryNote}
+- Experience: ${experience}
+- Available days per week: ${daysAvailable}
+- Session duration: ${duration} minutes
+
+=== AVAILABLE EXERCISE DATABASE (use these) ===
+PULL: Assisted Pull-ups, Inverted Row TRX, Bicep Curls, Lat Pulldown
+LEGS (knee-safe): Romanian Deadlifts (RDL), Reverse Lunges, Leg Curl, Hip Thrust, Step-Up, Cycling
+RECOVERY: Pilates Reformer, Stretching, Foam Rolling, Yoga, Mobility
+PUSH: Weighted Push-ups, Dumbbell Military Press, Assisted Dips, Lateral Raises, Tricep Pushdown
+CONDITIONING: Kettlebell Swing, Farmer's Walk, Concept 2 Rower, Assault Bike, Russian Twist, HIIT Circuit
+
+=== INSTRUCTIONS ===
+1. ALWAYS respect the athlete's physical limitations (injuries).
+2. Choose exercises FROM THE DATABASE above, adapted to the level.
+3. Apply the PT methodology periodization.
+4. For operated knee: NO deep squats or heavy leg press.
+5. Include coaching notes and technical cues in English.
+6. The plan must be realistic for the indicated session duration.
+7. Add a mental/psychological tip for each day.
+
+=== RESPONSE FORMAT (PURE JSON, no text outside the JSON) ===
+{
+  "workoutPlan": {
+    "level": "${level}",
+    "daysPerWeek": ${daysAvailable},
+    "sessionDuration": ${duration},
+    "focus": ["goal1", "goal2"],
+    "ptNote": "Personal note from the PT for the athlete based on their profile",
+    "schedule": [
+      {
+        "day": "Day 1 – Title",
+        "theme": "Pull/Push/Legs/Conditioning/Recovery",
+        "mentalCue": "Mental tip for this workout",
+        "exercises": [
+          {
+            "name": "Exercise Name",
+            "sets": 4,
+            "reps": "8-10",
+            "rest": "90s",
+            "weight": "Weight suggestion",
+            "coachingCue": "PT technical cue",
+            "modifications": "Modification if there is an injury"
+          }
+        ],
+        "warmup": ["warmup exercise 1", "warmup exercise 2"],
+        "cooldown": ["stretching 1", "stretching 2"]
+      }
+    ],
+    "progressionStrategy": "Weekly progression strategy",
+    "deloadFrequency": "every 4 weeks",
+    "nutritionTip": "Basic nutritional advice",
+    "notes": "General PT notes"
+  }
+}`;
+  }
+
+  return `Sei un personal trainer esperto di Tactical Strength. Devi creare un piano di allenamento personalizzato basandoti ESCLUSIVAMENTE sulla metodologia qui sotto e sul profilo dell'atleta. Rispondi INTERAMENTE in italiano.
 
 === KNOWLEDGE BASE DEL PERSONAL TRAINER ===
 ${PT_KNOWLEDGE_BASE}
@@ -137,8 +208,8 @@ ${PT_KNOWLEDGE_BASE}
 - Obiettivi: ${goalsText}
 - Problemi fisici/infortuni: ${injuryNote}
 - Esperienza: ${experience}
-- Giorni disponibili a settimana: ${preferredDays ? preferredDays.length : 4}
-- Durata sessione: ${sessionDuration || 60} minuti
+- Giorni disponibili a settimana: ${daysAvailable}
+- Durata sessione: ${duration} minuti
 
 === DATABASE ESERCIZI DISPONIBILI (usa questi) ===
 TIRATA: Trazioni Assistite, Rematore Inverso TRX, Curl Bicipiti, Lat Machine
@@ -160,8 +231,8 @@ CONDIZIONAMENTO: Kettlebell Swing, Farmer's Walk, Vogatore Concept 2, Assault Bi
 {
   "workoutPlan": {
     "level": "${level}",
-    "daysPerWeek": ${preferredDays ? preferredDays.length : 4},
-    "sessionDuration": ${sessionDuration || 60},
+    "daysPerWeek": ${daysAvailable},
+    "sessionDuration": ${duration},
     "focus": ["obiettivo1", "obiettivo2"],
     "ptNote": "Nota personale del PT per l'atleta basata sul suo profilo",
     "schedule": [

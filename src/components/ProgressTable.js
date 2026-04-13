@@ -1,14 +1,15 @@
 import React, { useMemo, useState } from 'react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 // ── Goal-to-metric mapping ───────────────────────────────────────────────────
-const GOAL_META = {
-  strength:   { icon: '🏋️', label: 'Forza',       stats: ['sessions','pr','week'] },
-  muscle:     { icon: '💎', label: 'Massa',        stats: ['sessions','pr','week'] },
-  endurance:  { icon: '🫁', label: 'Resistenza',   stats: ['sessions','week','streak'] },
-  weightloss: { icon: '⚡', label: 'Definizione',  stats: ['week','sessions','streak'] },
-  health:     { icon: '🧘', label: 'Salute',       stats: ['week','sessions','streak'] },
-  sport:      { icon: '🎯', label: 'Sport',        stats: ['sessions','week','pr'] },
-};
+const getGOAL_META = (t) => ({
+  strength:   { icon: '🏋️', label: t.goal_strength,   stats: ['sessions','pr','week'] },
+  muscle:     { icon: '💎', label: t.goal_muscle,     stats: ['sessions','pr','week'] },
+  endurance:  { icon: '🫁', label: t.goal_endurance,  stats: ['sessions','week','streak'] },
+  weightloss: { icon: '⚡', label: t.goal_weightloss, stats: ['week','sessions','streak'] },
+  health:     { icon: '🧘', label: t.goal_health,     stats: ['week','sessions','streak'] },
+  sport:      { icon: '🎯', label: t.goal_sport,      stats: ['sessions','week','pr'] },
+});
 
 const DAY_COLOR = ['','text-green-400','text-blue-400','text-yellow-400','text-red-400','text-orange-400'];
 
@@ -53,6 +54,8 @@ function bestImprovement(workouts) {
 }
 
 export default function ProgressTable({ workouts = [], prs = {}, profile, onDelete }) {
+  const { t } = useLanguage();
+  const GOAL_META = getGOAL_META(t);
   const [showAll, setShowAll] = useState(false);
 
   const goals     = profile?.goals || [];
@@ -85,10 +88,10 @@ export default function ProgressTable({ workouts = [], prs = {}, profile, onDele
 
   // ── Stat definitions ──────────────────────────────────────────────────────
   const statDefs = {
-    sessions: { label: 'Allenamenti', value: completed.length, color: 'text-blue-400',   unit: '' },
-    week:     { label: 'Giorni · 7gg', value: sessionsThisWeek, color: 'text-purple-400', unit: '' },
-    pr:       { label: 'Record',       value: prCount,          color: 'text-yellow-400', unit: '' },
-    streak:   { label: 'Streak',       value: streak,           color: 'text-orange-400', unit: 'gg' },
+    sessions: { label: t.statSessions,   value: completed.length, color: 'text-blue-400',   unit: '' },
+    week:     { label: t.statDays7,      value: sessionsThisWeek, color: 'text-purple-400', unit: '' },
+    pr:       { label: t.statPR,         value: prCount,          color: 'text-yellow-400', unit: '' },
+    streak:   { label: t.statStreakDays,  value: streak,           color: 'text-orange-400', unit: t.streakUnit },
   };
 
   return (
@@ -99,7 +102,7 @@ export default function ProgressTable({ workouts = [], prs = {}, profile, onDele
         <div className="flex items-center gap-1.5 mb-4">
           <span className="text-sm">{goalCfg.icon}</span>
           <span className="text-white/25 text-[10px] font-semibold uppercase tracking-wider">
-            Obiettivo · {goalCfg.label}
+            {t.goalLabel} · {goalCfg.label}
           </span>
         </div>
       )}
@@ -129,7 +132,7 @@ export default function ProgressTable({ workouts = [], prs = {}, profile, onDele
             </svg>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-white/25 text-[9px] font-semibold uppercase tracking-wider">Miglioramento top</p>
+            <p className="text-white/25 text-[9px] font-semibold uppercase tracking-wider">{t.topImprovement}</p>
             <p className="text-white/70 text-xs font-bold truncate">{topGain.name}</p>
           </div>
           <span className="text-green-400 font-black text-sm flex-shrink-0">+{topGain.pct}%</span>
@@ -140,7 +143,7 @@ export default function ProgressTable({ workouts = [], prs = {}, profile, onDele
       {(goalId === 'strength' || goalId === 'muscle') && prCount === 0 && completed.length >= 1 && (
         <div className="bg-blue-500/8 border border-blue-500/10 rounded-2xl p-3.5 mb-5">
           <p className="text-blue-400/60 text-xs leading-relaxed">
-            💡 Inserisci il peso che usi per vedere i tuoi record personali e la progressione nel tempo.
+            {t.prNudge}
           </p>
         </div>
       )}
@@ -148,7 +151,7 @@ export default function ProgressTable({ workouts = [], prs = {}, profile, onDele
       {/* Recent log */}
       {recentList.length > 0 && (
         <>
-          <p className="text-white/20 text-[9px] font-semibold uppercase tracking-wider mb-3">Storico recente</p>
+          <p className="text-white/20 text-[9px] font-semibold uppercase tracking-wider mb-3">{t.recentHistory}</p>
           <div className="space-y-2">
             {recentList.map(w => {
               const col = DAY_COLOR[w.day] || 'text-white/30';
@@ -187,7 +190,7 @@ export default function ProgressTable({ workouts = [], prs = {}, profile, onDele
           {completed.length > 5 && (
             <button onClick={() => setShowAll(v => !v)}
               className="w-full text-center text-white/20 text-[10px] py-3 hover:text-white/40 transition-colors">
-              {showAll ? 'Mostra meno ↑' : `Vedi tutti (${completed.length}) ↓`}
+              {showAll ? t.showLess : `${t.showAll} (${completed.length}) ↓`}
             </button>
           )}
         </>
@@ -198,8 +201,8 @@ export default function ProgressTable({ workouts = [], prs = {}, profile, onDele
           <div className="w-12 h-12 rounded-full glass mx-auto mb-3 flex items-center justify-center">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.3"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
           </div>
-          <p className="text-white/30 text-xs">Nessun allenamento registrato</p>
-          <p className="text-white/15 text-[10px] mt-1">Completa il primo esercizio per iniziare a tracciare i progressi</p>
+          <p className="text-white/30 text-xs">{t.noWorkouts}</p>
+          <p className="text-white/15 text-[10px] mt-1">{t.noWorkoutsHint}</p>
         </div>
       )}
     </div>

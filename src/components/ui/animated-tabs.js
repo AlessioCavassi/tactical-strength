@@ -3,40 +3,41 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "../../lib/utils";
+import { useLanguage } from "../../i18n/LanguageContext";
 
-const defaultTabs = [
+const getDefaultTabs = (t) => [
   {
     id: "tab1",
-    label: "Forza",
+    label: t.tabStrength,
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 4v16"/><path d="M18 4v16"/><path d="M6 12h12"/><circle cx="6" cy="4" r="2"/><circle cx="6" cy="20" r="2"/><circle cx="18" cy="4" r="2"/><circle cx="18" cy="20" r="2"/></svg>
     ),
     color: "green",
     days: [1, 4],
-    title: "Giorni di Forza",
-    desc: "Trazioni, rematori, piegamenti. Potenza pura e base solida.",
+    title: t.tabStrengthTitle,
+    desc: t.tabStrengthDesc,
   },
   {
     id: "tab2",
-    label: "Gambe",
+    label: t.tabLegs,
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 2a5 5 0 015 5v4a5 5 0 01-10 0V7a5 5 0 015-5z"/><path d="M9 16l-2 6"/><path d="M15 16l2 6"/></svg>
     ),
     color: "blue",
     days: [2],
-    title: "Gambe Tattiche",
-    desc: "Stacchi rumeni, affondi. Safe per le ginocchia.",
+    title: t.tabLegsTitle,
+    desc: t.tabLegsDesc,
   },
   {
     id: "tab3",
-    label: "Recupero",
+    label: t.tabRecovery,
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
     ),
     color: "yellow",
     days: [3, 5],
-    title: "Recupero Attivo",
-    desc: "Pilates, MetCon, mobilità. Accelera il recupero.",
+    title: t.tabRecoveryTitle,
+    desc: t.tabRecoveryDesc,
   },
 ];
 
@@ -47,19 +48,21 @@ const colorMap = {
 };
 
 const AnimatedTabs = ({
-  tabs = defaultTabs,
+  tabs,
   defaultTab,
   className,
 }) => {
-  const [activeTab, setActiveTab] = useState(defaultTab || tabs[0]?.id);
+  const { t } = useLanguage();
+  const resolvedTabs = tabs || getDefaultTabs(t);
+  const [activeTab, setActiveTab] = useState(defaultTab || resolvedTabs[0]?.id);
 
-  if (!tabs?.length) return null;
+  if (!resolvedTabs?.length) return null;
 
   return (
     <div className={cn("w-full flex flex-col gap-y-3", className)}>
       {/* Tab bar */}
       <div className="flex gap-1 glass-light p-1 rounded-2xl">
-        {tabs.map((tab) => (
+        {resolvedTabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
@@ -82,7 +85,7 @@ const AnimatedTabs = ({
 
       {/* Content */}
       <div className="glass-light rounded-2xl p-4 min-h-[140px]">
-        {tabs.map(
+        {resolvedTabs.map(
           (tab) =>
             activeTab === tab.id && (
               <motion.div
@@ -101,7 +104,7 @@ const AnimatedTabs = ({
                     <div className="flex gap-1.5">
                       {tab.days.map(d => (
                         <span key={d} className={`${colorMap[tab.color].bg} ${colorMap[tab.color].text} text-[10px] font-semibold px-2 py-1 rounded-lg`}>
-                          Giorno {d}
+                          {t.dayLabel} {d}
                         </span>
                       ))}
                     </div>

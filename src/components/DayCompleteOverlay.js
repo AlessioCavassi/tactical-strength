@@ -1,16 +1,11 @@
 import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
-
-const MESSAGES = [
-  'Sessione completata. 🔥',
-  'Hai dominato questa giornata.',
-  'Il tuo corpo ti ringrazia.',
-  'Consistenza = risultati.',
-  'Un altro passo verso il tuo meglio.',
-];
+import { useLanguage } from '../i18n/LanguageContext';
 
 export default function DayCompleteOverlay({ show, dayTitle, exerciseCount, onClose }) {
+  const { t } = useLanguage();
+  const MESSAGES = t.dayCompleteMessages;
   const fired = useRef(false);
 
   useEffect(() => {
@@ -101,7 +96,7 @@ export default function DayCompleteOverlay({ show, dayTitle, exerciseCount, onCl
               transition={{ delay: 0.45 }}
               className="text-white/40 text-sm mb-1"
             >
-              {exerciseCount} esercizi completati
+              {exerciseCount} {t.exercisesCompleted}
             </motion.p>
 
             <motion.p
@@ -125,7 +120,7 @@ export default function DayCompleteOverlay({ show, dayTitle, exerciseCount, onCl
                 boxShadow: '0 0 24px rgba(var(--glow-rgb,0,122,255), 0.35)',
               }}
             >
-              Continua →
+              {t.continueBtn}
             </motion.button>
           </motion.div>
         </motion.div>

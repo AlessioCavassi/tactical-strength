@@ -1,13 +1,16 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLanguage } from '../i18n/LanguageContext';
 
-const CATEGORY_CONFIG = {
-  all:     { label: 'Tutti',   icon: '🏅', glow: 'from-yellow-500/20 to-orange-500/20',  ring: 'ring-yellow-500/30'  },
-  fisica:  { label: 'Fisica',  icon: '💪', glow: 'from-orange-500/20 to-red-500/20',     ring: 'ring-orange-500/40'  },
-  mentale: { label: 'Mentale', icon: '🧠', glow: 'from-purple-500/20 to-violet-500/20',  ring: 'ring-purple-500/40'  },
-};
+const getCATEGORY_CONFIG = (t) => ({
+  all:     { label: t.catAll,      icon: '🏅', glow: 'from-yellow-500/20 to-orange-500/20',  ring: 'ring-yellow-500/30'  },
+  fisica:  { label: t.catPhysical, icon: '💪', glow: 'from-orange-500/20 to-red-500/20',     ring: 'ring-orange-500/40'  },
+  mentale: { label: t.catMental,   icon: '🧠', glow: 'from-purple-500/20 to-violet-500/20',  ring: 'ring-purple-500/40'  },
+});
 
 export default function BadgeShowcase({ allBadges, earnedBadges, stats, onClose }) {
+  const { t } = useLanguage();
+  const CATEGORY_CONFIG = getCATEGORY_CONFIG(t);
   const [filter, setFilter] = useState('all');
   const [selected, setSelected] = useState(null);
 
@@ -33,9 +36,9 @@ export default function BadgeShowcase({ allBadges, earnedBadges, stats, onClose 
       <div className="px-6 pt-14 pb-4 flex-shrink-0">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-black text-white tracking-tight">Trofei</h1>
+            <h1 className="text-2xl font-black text-white tracking-tight">{t.trophies}</h1>
             <p className="text-white/30 text-xs mt-0.5">
-              {earnedCount} di {totalCount} sbloccati · {pct}%
+              {earnedCount} {t.unlockedOf} {totalCount} {t.unlockedLabel} · {pct}%
             </p>
           </div>
           <button
@@ -75,7 +78,7 @@ export default function BadgeShowcase({ allBadges, earnedBadges, stats, onClose 
                 <p className="text-yellow-400 text-sm font-black">{stats.totalPRs}🏆</p>
               </div>
               <div className="flex-1 glass-light rounded-xl py-2 text-center">
-                <p className="text-white/20 text-[8px] uppercase font-bold">Esercizi</p>
+                <p className="text-white/20 text-[8px] uppercase font-bold">{t.statExercises}</p>
                 <p className="text-blue-400 text-sm font-black">{stats.totalExercises}</p>
               </div>
               <div className="flex-1 glass-light rounded-xl py-2 text-center">
@@ -160,7 +163,7 @@ export default function BadgeShowcase({ allBadges, earnedBadges, stats, onClose 
         {/* Locked count summary */}
         {earnedCount < totalCount && (
           <p className="text-center text-white/15 text-[10px] mt-5">
-            {totalCount - earnedCount} badge ancora da sbloccare
+            {totalCount - earnedCount} {t.badgesToUnlock}
           </p>
         )}
       </div>
@@ -195,17 +198,17 @@ export default function BadgeShowcase({ allBadges, earnedBadges, stats, onClose 
                 </div>
                 <div className="flex-1">
                   <p className="text-white/30 text-[9px] font-bold uppercase tracking-wider mb-0.5">
-                    {selected.category === 'mentale' ? '🧠 Badge Mentale' : '💪 Badge Fisico'}
+                    {selected.category === 'mentale' ? t.mentalBadge : t.physicalBadge}
                   </p>
                   <p className="text-white font-black text-lg leading-tight">{selected.title}</p>
                   {earnedSet.has(selected.id) ? (
                     <span className="inline-flex items-center gap-1 mt-1 text-green-400 text-[10px] font-bold">
                       <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                      Sbloccato
+                      {t.unlocked}
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 mt-1 text-white/25 text-[10px] font-semibold">
-                      🔒 Bloccato
+                      {t.locked}
                     </span>
                   )}
                 </div>
@@ -213,7 +216,7 @@ export default function BadgeShowcase({ allBadges, earnedBadges, stats, onClose 
 
               <div className="glass-light rounded-2xl p-4">
                 <p className="text-white/25 text-[9px] font-bold uppercase tracking-wider mb-1.5">
-                  {earnedSet.has(selected.id) ? 'Come hai sbloccato questo badge' : 'Come sbloccarlo'}
+                  {earnedSet.has(selected.id) ? t.howUnlocked : t.howToUnlock}
                 </p>
                 <p className="text-white/60 text-sm leading-relaxed">{selected.desc}</p>
               </div>
@@ -222,7 +225,7 @@ export default function BadgeShowcase({ allBadges, earnedBadges, stats, onClose 
                 onClick={() => setSelected(null)}
                 className="w-full mt-4 py-3.5 rounded-2xl glass text-white/40 text-sm font-semibold active:scale-95 transition-transform"
               >
-                Chiudi
+                {t.close}
               </button>
             </motion.div>
           </>
